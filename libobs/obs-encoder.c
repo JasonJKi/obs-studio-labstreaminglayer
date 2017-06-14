@@ -17,11 +17,11 @@
 
 #include "obs.h"
 #include "obs-internal.h"
-
 #define encoder_active(encoder) \
 	os_atomic_load_bool(&encoder->active)
 #define set_encoder_active(encoder, val) \
 	os_atomic_set_bool(&encoder->active, val)
+
 
 struct obs_encoder_info *find_encoder(const char *id)
 {
@@ -41,7 +41,7 @@ const char *obs_encoder_get_display_name(const char *id)
 	return ei ? ei->get_name(ei->type_data) : NULL;
 }
 
-static bool init_encoder(struct obs_encoder *encoder, const char *name,
+static bool *init_encoder(struct obs_encoder *encoder, const char *name,
 		obs_data_t *settings, obs_data_t *hotkey_data)
 {
 	pthread_mutexattr_t attr;
@@ -185,15 +185,25 @@ static void add_connection(struct obs_encoder *encoder)
 
 		audio_output_connect(encoder->media, encoder->mixer_idx,
 				&audio_info, receive_audio, encoder);
-	} else {
-		struct video_scale_info info = {0};
+	}
+	else {
+		struct video_scale_info info = { 0 };
 		get_video_info(encoder, &info);
 
 		video_output_connect(encoder->media, &info, receive_video,
 			encoder);
+		
 	}
 
 	set_encoder_active(encoder, true);
+}
+
+void set_lsl_btn_active(obs_encoder_t *encoder) {
+	encoder->lsl_active = true;
+}
+
+void set_lsl_btn_inactive(obs_encoder_t *encoder) {
+	encoder->lsl_active = false;
 }
 
 static void remove_connection(struct obs_encoder *encoder)
@@ -809,6 +819,7 @@ static inline void do_encode(struct obs_encoder *encoder,
 		 * you do not want to use relative timestamps here */
 		pkt.dts_usec = encoder->start_ts / 1000 +
 			packet_dts_usec(&pkt) - encoder->offset_usec;
+
 		pkt.sys_dts_usec = pkt.dts_usec;
 
 		pthread_mutex_lock(&encoder->callbacks_mutex);
@@ -848,16 +859,24 @@ static void receive_video(void *param, struct video_data *frame)
 		enc_frame.data[i]     = frame->data[i];
 		enc_frame.linesize[i] = frame->linesize[i];
 	}
-
 	if (!encoder->start_ts)
 		encoder->start_ts = frame->timestamp;
+	;
 
 	enc_frame.frames = 1;
 	enc_frame.pts    = encoder->cur_pts;
-
+	
+	if (encoder->lsl_active)
+	{
+		pthread_mutex_lock(&encoder->obs_lsl->outputs_mutex);
+		send_lsl_trigger(encoder->obs_lsl, enc_frame.pts, frame->timestamp);
+		pthread_mutex_unlock(&encoder->obs_lsl->outputs_mutex);
+	}
 	do_encode(encoder, &enc_frame);
 
+	blog(LOG_INFO, "frame time '%f'...", frame->timestamp);
 	encoder->cur_pts += encoder->timebase_num;
+	blog(LOG_INFO, "frame number '%f'...", encoder->cur_pts);
 
 wait_for_audio:
 	profile_end(receive_video_name);
@@ -1015,6 +1034,7 @@ end:
 	profile_end(receive_audio_name);
 }
 
+
 void obs_encoder_add_output(struct obs_encoder *encoder,
 		struct obs_output *output)
 {
@@ -1126,6 +1146,7 @@ void obs_encoder_release(obs_encoder_t *encoder)
 		obs_weak_encoder_release(control);
 	}
 }
+
 
 void obs_weak_encoder_addref(obs_weak_encoder_t *weak)
 {

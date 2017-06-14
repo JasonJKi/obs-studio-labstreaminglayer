@@ -51,9 +51,11 @@ endif()
 include_directories(${FFMPEG_INCLUDE_DIRS})
 include_directories(SYSTEM "obs-frontend-api")
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/libobs")
+
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/deps/libff")
 
 find_package(Libcurl REQUIRED)
+
 include_directories(${LIBCURL_INCLUDE_DIRS})
 add_definitions(${LIBCURL_DEFINITIONS})
 
@@ -260,8 +262,8 @@ if(WIN32)
 		PROPERTIES
 			OUTPUT_NAME "obs${_output_suffix}")
 endif()
-
 target_link_libraries(obs
+	lsl64
 	libobs
 	Qt5::Widgets
 	obs-frontend-api

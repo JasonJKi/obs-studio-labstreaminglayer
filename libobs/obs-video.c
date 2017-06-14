@@ -591,7 +591,7 @@ void *obs_video_thread(void *param)
 	uint32_t fps_total_frames = 0;
 
 	obs->video.video_time = os_gettime_ns();
-
+//	obs_lsl_create();
 	os_set_thread_name("libobs: graphics thread");
 
 	const char *video_thread_name =
@@ -609,7 +609,7 @@ void *obs_video_thread(void *param)
 		last_time = tick_sources(obs->video.video_time, last_time);
 		profile_end(tick_sources_name);
 
-		profile_start(render_displays_name);
+		profile_start(render_displays_name);			
 		render_displays();
 		profile_end(render_displays_name);
 

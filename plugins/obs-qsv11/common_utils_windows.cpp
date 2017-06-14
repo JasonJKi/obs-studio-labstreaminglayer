@@ -92,7 +92,7 @@ mfxStatus Initialize(mfxIMPL impl, mfxVersion ver, MFXVideoSession* pSession, mf
 void Release()
 {
 #if defined(DX9_D3D) || defined(DX11_D3D)
-    CleanupHWDevice();
+//    CleanupHWDevice();
     DX9_CleanupHWDevice();
 #endif
 }

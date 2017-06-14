@@ -129,6 +129,10 @@ void OutputTimer::RecordTimerStart()
 	UpdateRecordTimerDisplay();
 }
 
+void OutputTimer::FrameCounterStart()
+{
+}
+
 void OutputTimer::StreamTimerStop()
 {
 	streamingAlreadyActive = false;
@@ -165,6 +169,10 @@ void OutputTimer::RecordTimerStop()
 	ui->recordTime->setText("00:00:00");
 }
 
+void OutputTimer::FrameCounterStop()
+{
+}
+
 void OutputTimer::UpdateStreamTimerDisplay()
 {
 	int remainingTime = streamingTimer->remainingTime() / 1000;
@@ -191,6 +199,9 @@ void OutputTimer::UpdateRecordTimerDisplay()
 	ui->recordTime->setText(text);
 }
 
+void OutputTimer::UpdateFrameCounter()
+{
+}
 void OutputTimer::ShowHideDialog()
 {
 	if (!isVisible()) {

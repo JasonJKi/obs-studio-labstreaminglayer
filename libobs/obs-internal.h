@@ -33,11 +33,51 @@
 #include "media-io/audio-resampler.h"
 #include "media-io/video-io.h"
 #include "media-io/audio-io.h"
+#include "liblsl\lsl_c.h"
+
 
 #include "obs.h"
 
 #define NUM_TEXTURES 2
 #define MICROSECOND_DEN 1000000
+
+/* ------------------------------------------------------------------------- */
+/* lsl stream */
+struct obs_lsl {
+	lsl_outlet						outlet;			/* stream outlet */
+
+	char data;
+	double timestamp;
+	int pushthrough;
+
+	pthread_mutex_t                 init_mutex;
+	pthread_mutex_t					outputs_mutex;
+	pthread_mutex_t					callbacks_mutex;
+
+	bool							initialized;
+/*	char *name;
+	char *type;
+	int channel_count;
+	double nominal_srate;
+	lsl_channel_format_t channel_format;
+	char *source_id;
+	struct obs_lsl              *lsl; */
+
+} ;
+
+extern bool *init_lsl(struct obs_lsl *labStream);
+
+extern bool obs_lsl_initialize_internal(obs_lsl_t* lslOutput,int channels);
+extern void obs_lsl_shutdown(obs_lsl_t* lslOutput);
+extern void obs_lsl_stop(obs_lsl_t *lslOutput,
+	void(*new_packet)(void *param, struct encoder_packet *packet),
+	void *param);
+
+extern void obs_lsl_add_output(struct obs_lsl *lslOutput,
+	struct obs_output *output);
+extern void obs_lsl_remove_output(struct obs_lsl *lslOutput,
+	struct obs_output *output);
+/* ------------------------------------------------------------------------- */
 
 static inline int64_t packet_dts_usec(struct encoder_packet *packet)
 {
@@ -809,7 +849,6 @@ struct obs_output {
 
 	/* indicates ownership of the info.id buffer */
 	bool                            owns_info_id;
-
 	bool                            received_video;
 	bool                            received_audio;
 	volatile bool                   data_active;
@@ -844,6 +883,7 @@ struct obs_output {
 	audio_t                         *audio;
 	obs_encoder_t                   *video_encoder;
 	obs_encoder_t                   *audio_encoders[MAX_AUDIO_MIXES];
+	obs_lsl_t						*obs_lsl;
 	obs_service_t                   *service;
 	size_t                          mixer_idx;
 
@@ -874,6 +914,10 @@ struct obs_output {
 	volatile bool                   delay_capturing;
 
 	char                            *last_error_message;
+
+	bool							lsl_active;
+
+
 };
 
 static inline void do_output_signal(struct obs_output *output,
@@ -922,6 +966,8 @@ struct obs_encoder {
 	struct obs_encoder_info         info;
 	struct obs_weak_encoder         *control;
 
+	obs_lsl_t						*obs_lsl;
+	bool lsl_active;
 	pthread_mutex_t                 init_mutex;
 
 	uint32_t                        samplerate;

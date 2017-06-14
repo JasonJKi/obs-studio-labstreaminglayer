@@ -6,16 +6,18 @@ option(BUILD_CAPTIONS "Build captions" FALSE)
 
 if(WIN32)
 	if (QTDIR OR DEFINED ENV{QTDIR} OR DEFINED ENV{QTDIR32} OR DEFINED ENV{QTDIR64})
+		message(WARNING "QTDIR variable defined")
 		# Qt path set by user or env var
 	else()
 		set(QTDIR "" CACHE PATH "Path to Qt (e.g. C:/Qt/5.7/msvc2015_64)")
 		message(WARNING "QTDIR variable is missing.  Please set this variable to specify path to Qt (e.g. C:/Qt/5.7/msvc2015_64)")
 	endif()
 	if (DepsPath OR DEFINED ENV{DepsPath} OR DEFINED ENV{DepsPath32} OR DEFINED ENV{DepsPath64})
+		message(WARNING "DepsPath defined")
 		# Dependencies path set by user or env var
 	else()
-		set(DepsPath "" CACHE PATH "Path to compiled dependencies (e.g. D:/dependencies/win64)")
-		message(WARNING "DepsPath variable is missing.  Please set this variable to specify path to compiled dependencies (e.g. D:/dependencies/win64)")
+		set(DepsPath "" CACHE PATH "Path to compiled dependencies (e.g. C:/dependencies/win64)")
+		message(WARNING "DepsPath variable is missing.  Please set this variable to specify path to compiled dependencies (e.g. C:/dependencies/win64)")
 	endif()
 endif()
 
@@ -104,17 +106,20 @@ mark_as_advanced(BUILD_TESTS)
 
 if(NOT INSTALLER_RUN)
 	add_subdirectory(deps)
-
+	
 
 	if(WIN32)
 		add_subdirectory(libobs-d3d11)
 	endif()
 
+	add_subdirectory(liblsl)
 	add_subdirectory(libobs-opengl)
 	add_subdirectory(libobs)
 	add_subdirectory(UI)
+	
 	add_subdirectory(plugins)
-	if (BUILD_TESTS)
+
+if (BUILD_TESTS)
 		add_subdirectory(test)
 	endif()
 

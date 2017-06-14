@@ -20,7 +20,6 @@
 #pragma once
 
 #include "obs.h"
-
 /* RAII wrappers */
 
 template<typename T, void addref(T), void release(T)>
@@ -36,6 +35,9 @@ using OBSDataArray = OBSRef<obs_data_array_t*, obs_data_array_addref,
 using OBSOutput = OBSRef<obs_output_t*, obs_output_addref, obs_output_release>;
 using OBSEncoder = OBSRef<obs_encoder_t*, obs_encoder_addref,
 						obs_encoder_release>;
+
+using OBSLSL = obs_lsl_t*;
+
 using OBSService = OBSRef<obs_service_t*, obs_service_addref,
 						obs_service_release>;
 

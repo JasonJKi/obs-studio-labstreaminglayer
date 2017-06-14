@@ -16,6 +16,7 @@ private:
 	QLabel *droppedFrames;
 	QLabel *streamTime;
 	QLabel *recordTime;
+	QLabel *frameCount;
 	QLabel *cpuUsage;
 	QLabel *kbps;
 	QLabel *statusSquare;

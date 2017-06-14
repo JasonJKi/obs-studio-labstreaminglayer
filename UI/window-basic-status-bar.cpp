@@ -13,6 +13,7 @@ OBSBasicStatusBar::OBSBasicStatusBar(QWidget *parent)
 	  droppedFrames (new QLabel),
 	  streamTime    (new QLabel),
 	  recordTime    (new QLabel),
+	  frameCount	(new QLabel),
 	  cpuUsage      (new QLabel),
 	  transparentPixmap (20, 20),
 	  greenPixmap       (20, 20),
@@ -21,6 +22,7 @@ OBSBasicStatusBar::OBSBasicStatusBar(QWidget *parent)
 {
 	streamTime->setText(QString("LIVE: 00:00:00"));
 	recordTime->setText(QString("REC: 00:00:00"));
+	frameCount->setText(QString("Frame: 0"));
 	cpuUsage->setText(QString("CPU: 0.0%, 0.00 fps"));
 
 	QWidget *brWidget = new QWidget(this);
@@ -41,6 +43,8 @@ OBSBasicStatusBar::OBSBasicStatusBar(QWidget *parent)
 	droppedFrames->setAlignment(Qt::AlignVCenter);
 	streamTime->setAlignment(Qt::AlignRight);
 	streamTime->setAlignment(Qt::AlignVCenter);
+	frameCount->setAlignment(Qt::AlignRight);
+	frameCount->setAlignment(Qt::AlignVCenter);
 	recordTime->setAlignment(Qt::AlignRight);
 	recordTime->setAlignment(Qt::AlignVCenter);
 	cpuUsage->setAlignment(Qt::AlignRight);
@@ -52,12 +56,14 @@ OBSBasicStatusBar::OBSBasicStatusBar(QWidget *parent)
 	droppedFrames->setIndent(20);
 	streamTime->setIndent(20);
 	recordTime->setIndent(20);
+	frameCount->setIndent(20);
 	cpuUsage->setIndent(20);
 	kbps->setIndent(10);
 
 	addPermanentWidget(droppedFrames);
 	addPermanentWidget(streamTime);
 	addPermanentWidget(recordTime);
+	addPermanentWidget(frameCount);
 	addPermanentWidget(cpuUsage);
 	addPermanentWidget(delayInfo);
 	addPermanentWidget(brWidget);

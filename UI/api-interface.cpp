@@ -224,6 +224,7 @@ struct OBSStudioAPI : obs_frontend_callbacks {
 		QMetaObject::invokeMethod(main, "StartRecording");
 	}
 
+
 	void obs_frontend_recording_stop(void) override
 	{
 		QMetaObject::invokeMethod(main, "StopRecording");
@@ -232,6 +233,22 @@ struct OBSStudioAPI : obs_frontend_callbacks {
 	bool obs_frontend_recording_active(void) override
 	{
 		return main->outputHandler->RecordingActive();
+	}
+
+	void obs_frontend_lsl_start(void) override
+	{
+		QMetaObject::invokeMethod(main, "StartLSL");
+	}
+
+
+	void obs_frontend_lsl_stop(void) override
+	{
+		QMetaObject::invokeMethod(main, "StopLSL");
+	}
+
+	bool obs_frontend_lsl_active(void) override
+	{
+		return main->outputHandler->LSLActive();
 	}
 
 	void obs_frontend_replay_buffer_start(void) override

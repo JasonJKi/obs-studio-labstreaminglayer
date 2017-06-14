@@ -67,6 +67,10 @@
 #include <QScreen>
 #include <QWindow>
 
+#include <iostream>
+#include <time.h>
+#include <stdlib.h>
+
 using namespace std;
 
 namespace {
@@ -126,9 +130,7 @@ static void AddExtraModulePaths()
 
 static QList<QKeySequence> DeleteKeys;
 
-OBSBasic::OBSBasic(QWidget *parent)
-	: OBSMainWindow  (parent),
-	  ui             (new Ui::OBSBasic)
+OBSBasic::OBSBasic(QWidget *parent): OBSMainWindow  (parent),ui (new Ui::OBSBasic)
 {
 	setAttribute(Qt::WA_NativeWindow);
 
@@ -4260,6 +4262,21 @@ void OBSBasic::StartRecording()
 	outputHandler->StartRecording();
 }
 
+void OBSBasic::StartLSL()
+{
+
+	if (outputHandler->LSLActive())
+		return;
+	if (disableOutputsRef)
+		return;
+
+	if (api)
+		api->on_event(OBS_FRONTEND_EVENT_LSL_STARTING);
+
+	outputHandler->StartLSL();
+	ui->lslButton->setText(QTStr("LSL Active"));
+}
+
 void OBSBasic::RecordStopping()
 {
 	ui->recordButton->setText(QTStr("Basic.Main.StoppingRecording"));
@@ -4282,6 +4299,15 @@ void OBSBasic::StopRecording()
 	OnDeactivate();
 }
 
+void OBSBasic::StopLSL()
+{
+	if (outputHandler->RecordingActive())
+		ui->lslButton->setText(QTStr("Recording.. Cant Stop"));
+
+	ui->lslButton->setText(QTStr("Start LSL"));
+	outputHandler->StopLSL();
+}
+
 void OBSBasic::RecordingStart()
 {
 	ui->statusbar->RecordingStarted(outputHandler->fileOutput);
@@ -4298,6 +4324,7 @@ void OBSBasic::RecordingStart()
 
 	blog(LOG_INFO, RECORDING_START);
 }
+
 
 void OBSBasic::RecordingStop(int code)
 {
@@ -4511,6 +4538,15 @@ void OBSBasic::on_recordButton_clicked()
 		StopRecording();
 	else
 		StartRecording();
+
+}
+
+void OBSBasic::on_lslButton_clicked()
+{
+	if (outputHandler->LSLActive())
+		StopLSL();
+	else
+		StartLSL();
 }
 
 void OBSBasic::on_settingsButton_clicked()
@@ -5360,6 +5396,8 @@ void OBSBasic::SystemTrayInit()
 			trayIcon);
 	sysTrayRecord = new QAction(QTStr("Basic.Main.StartRecording"),
 			trayIcon);
+	sysTrayLSL = new QAction(QTStr("Starting LSL"),
+			trayIcon);
 	sysTrayReplayBuffer = new QAction(QTStr("Basic.Main.StartReplayBuffer"),
 			trayIcon);
 	exit = new QAction(QTStr("Exit"),
@@ -5377,6 +5415,7 @@ void OBSBasic::SystemTrayInit()
 			this, SLOT(on_streamButton_clicked()));
 	connect(sysTrayRecord, SIGNAL(triggered()),
 			this, SLOT(on_recordButton_clicked()));
+
 	connect(sysTrayReplayBuffer.data(), &QAction::triggered,
 			this, &OBSBasic::ReplayBufferClicked);
 	connect(exit, SIGNAL(triggered()),

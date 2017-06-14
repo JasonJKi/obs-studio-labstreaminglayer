@@ -21,10 +21,13 @@ public slots:
 	void RecordingTimerButton();
 	void StreamTimerStart();
 	void RecordTimerStart();
+	void FrameCounterStart();
 	void StreamTimerStop();
 	void RecordTimerStop();
+	void FrameCounterStop();
 	void UpdateStreamTimerDisplay();
 	void UpdateRecordTimerDisplay();
+	void UpdateFrameCounter();
 	void ShowHideDialog();
 	void EventStopStreaming();
 	void EventStopRecording();

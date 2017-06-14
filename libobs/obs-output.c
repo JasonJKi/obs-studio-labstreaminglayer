@@ -127,6 +127,7 @@ obs_output_t *obs_output_create(const char *id, const char *name,
 	} else {
 		output->info = *info;
 	}
+	output->lsl_active = false;
 	output->video    = obs_get_video();
 	output->audio    = obs_get_audio();
 	if (output->info.get_defaults)
@@ -251,6 +252,7 @@ bool obs_output_actual_start(obs_output_t *output)
 	output->caption_timestamp = 0;
 	return success;
 }
+#define GET_VARIABLE_NAME(Variable) (#Variable)
 
 bool obs_output_start(obs_output_t *output)
 {
@@ -273,6 +275,14 @@ bool obs_output_start(obs_output_t *output)
 		return false;
 	}
 }
+
+bool obs_lsl_start(obs_output_t *output)
+{
+	
+	do_output_signal(output, "starting");
+	return true;
+}
+
 
 static inline bool data_active(struct obs_output *output)
 {
@@ -393,6 +403,12 @@ void obs_output_stop(obs_output_t *output)
 	}
 }
 
+void obs_lsl_stop(obs_output_t * output)
+{
+	do_output_signal(output, "stopping");
+	obs_output_actual_stop(output, false, os_gettime_ns());
+}
+
 void obs_output_force_stop(obs_output_t *output)
 {
 	if (!obs_output_valid(output, "obs_output_force_stop"))
@@ -410,6 +426,12 @@ bool obs_output_active(const obs_output_t *output)
 	return (output != NULL) ?
 		(active(output) || reconnecting(output)) : false;
 }
+
+bool obs_lsl_active(const obs_output_t * output)
+{
+	return obs_lsl_active;
+}
+
 
 static inline obs_data_t *get_defaults(const struct obs_output_info *info)
 {
@@ -555,26 +577,51 @@ void obs_output_remove_encoder(struct obs_output *output,
 	}
 }
 
+void obs_output_set_lsl(obs_output_t *output, obs_lsl_t *lslstream)
+{
+	/*set lsl on the output*/
+	if (lslstream->initialized)
+	{
+		output->obs_lsl = lslstream;
+		output->lsl_active = true;
+	}
+}
+
 void obs_output_set_video_encoder(obs_output_t *output, obs_encoder_t *encoder)
 {
+
 	if (!obs_output_valid(output, "obs_output_set_video_encoder"))
 		return;
 	if (encoder && encoder->info.type != OBS_ENCODER_VIDEO) {
 		blog(LOG_WARNING, "obs_output_set_video_encoder: "
-				"encoder passed is not a video encoder");
+			"encoder passed is not a video encoder");
 		return;
 	}
 
-	if (output->video_encoder == encoder) return;
+
+	if (output->video_encoder == encoder) {
+		if (output->lsl_active) {
+			output->video_encoder->obs_lsl = output->obs_lsl;
+			output->video_encoder->lsl_active = output->lsl_active;
+		}
+		return;
+	}
 
 	obs_encoder_remove_output(output->video_encoder, output);
 	obs_encoder_add_output(encoder, output);
 	output->video_encoder = encoder;
 
+	/*set lsl on the video encoder*/
+	if (output->lsl_active) {
+		output->video_encoder->obs_lsl = output->obs_lsl;
+		output->video_encoder->lsl_active = output->lsl_active;
+	}
+
+
 	/* set the preferred resolution on the encoder */
 	if (output->scaled_width && output->scaled_height)
 		obs_encoder_set_scaled_size(output->video_encoder,
-				output->scaled_width, output->scaled_height);
+			output->scaled_width, output->scaled_height);
 }
 
 void obs_output_set_audio_encoder(obs_output_t *output, obs_encoder_t *encoder,
@@ -1963,6 +2010,7 @@ void obs_output_addref(obs_output_t *output)
 
 	obs_ref_addref(&output->control->ref);
 }
+
 
 void obs_output_release(obs_output_t *output)
 {

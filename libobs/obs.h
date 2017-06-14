@@ -16,7 +16,6 @@
 ******************************************************************************/
 
 #pragma once
-
 #include "util/c99defs.h"
 #include "util/bmem.h"
 #include "util/profiler.h"
@@ -50,7 +49,6 @@ struct obs_service;
 struct obs_module;
 struct obs_fader;
 struct obs_volmeter;
-
 typedef struct obs_display    obs_display_t;
 typedef struct obs_view       obs_view_t;
 typedef struct obs_source     obs_source_t;
@@ -1357,8 +1355,26 @@ EXPORT const char *obs_output_get_name(const obs_output_t *output);
 /** Starts the output. */
 EXPORT bool obs_output_start(obs_output_t *output);
 
+
+
+
+struct obs_lsl;
+typedef struct obs_lsl obs_lsl_t;
+
+//extern obs_lsl_t lslOutlet;
+/** Starts the lsls. */
+EXPORT bool obs_lsl_start(obs_output_t *output);
 /** Stops the output. */
 EXPORT void obs_output_stop(obs_output_t *output);
+EXPORT void obs_lsl_stop(obs_output_t *output);
+/** initialize LSL **/
+EXPORT obs_lsl_t *obs_lsl_create();
+EXPORT bool obs_lsl_destroy(obs_lsl_t* lslOutput);
+EXPORT void send_lsl_trigger(obs_lsl_t *obs_lsl,int frame_pt, double timestamp );
+EXPORT void obs_output_set_lsl(obs_output_t *output,obs_lsl_t *obs_lsl);
+
+//EXPORT lsl_outlet create_lsl_stream(obs_encoder_t *encoder);
+//EXPORT lsl_outlet *lsl_stream_create();
 
 /**
  * On reconnection, start where it left of on reconnection.  Note however that
@@ -1388,6 +1404,9 @@ EXPORT void obs_output_force_stop(obs_output_t *output);
 
 /** Returns whether the output is active */
 EXPORT bool obs_output_active(const obs_output_t *output);
+
+/** Returns whether the lsl is active */
+EXPORT bool obs_lsl_active(const obs_output_t *output);
 
 /** Gets the default settings for an output type */
 EXPORT obs_data_t *obs_output_defaults(const char *id);
@@ -1492,7 +1511,7 @@ EXPORT int obs_output_get_total_frames(const obs_output_t *output);
  * to 0 to disable scaling.
  *
  * If this output uses an encoder, it will call obs_encoder_set_scaled_size on
- * the encoder before the stream is started.  If the encoder is already active,
+ * the encoder before the stream is startedsl.  If the encoder is already active,
  * then this function will trigger a warning and do nothing.
  */
 EXPORT void obs_output_set_preferred_size(obs_output_t *output, uint32_t width,

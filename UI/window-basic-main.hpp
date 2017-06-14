@@ -38,6 +38,11 @@
 
 #include <QPointer>
 
+#include <time.h>
+#include <stdlib.h>
+
+#include <liblsl/lsl_c.h>
+
 class QMessageBox;
 class QListWidgetItem;
 class VolControl;
@@ -140,6 +145,7 @@ private:
 	std::unique_ptr<BasicOutputHandler> outputHandler;
 	bool streamingStopping = false;
 	bool recordingStopping = false;
+	bool lslStopping = false;
 	bool replayBufferStopping = false;
 
 	gs_vertbuffer_t *box = nullptr;
@@ -170,6 +176,7 @@ private:
 	QPointer<QSystemTrayIcon> trayIcon;
 	QPointer<QAction>         sysTrayStream;
 	QPointer<QAction>         sysTrayRecord;
+	QPointer<QAction>         sysTrayLSL;
 	QPointer<QAction>         sysTrayReplayBuffer;
 	QPointer<QAction>         showHide;
 	QPointer<QAction>         exit;
@@ -262,7 +269,7 @@ private:
 	QListWidgetItem *GetTopSelectedSourceItem();
 
 	obs_hotkey_pair_id streamingHotkeys, recordingHotkeys,
-	                   replayBufHotkeys;
+	                   replayBufHotkeys, lslHotkeys;
 	obs_hotkey_id forceStreamingStopHotkey;
 
 	void InitDefaultTransitions();
@@ -352,6 +359,7 @@ private:
 	obs_data_array_t *SavePreviewProjectors();
 	void LoadSavedPreviewProjectors(
 		obs_data_array_t *savedPreviewProjectors);
+//	boost::shared_ptr<boost::thread> reader_thread_;
 
 public slots:
 	void StartStreaming();
@@ -367,6 +375,9 @@ public slots:
 
 	void StartRecording();
 	void StopRecording();
+
+	void StartLSL();
+	void StopLSL();
 
 	void RecordingStart();
 	void RecordStopping();
@@ -475,6 +486,7 @@ public:
 	int  ResetVideo();
 	bool ResetAudio();
 
+	void InitLSL();
 	void ResetOutputs();
 
 	void ResetAudioDevice(const char *sourceId, const char *deviceId,
@@ -584,6 +596,7 @@ private slots:
 
 	void on_streamButton_clicked();
 	void on_recordButton_clicked();
+	void on_lslButton_clicked();
 	void on_settingsButton_clicked();
 
 	void on_actionWebsite_triggered();

@@ -5,6 +5,10 @@
 #include "audio-encoders.hpp"
 #include "window-basic-main.hpp"
 #include "window-basic-main-outputs.hpp"
+#include "obs-ffmpeg-compat.h"
+#include <iostream>
+#include <future>
+#include <lsl_cpp.h>
 
 using namespace std;
 
@@ -181,7 +185,9 @@ struct SimpleOutput : BasicOutputHandler {
 	OBSEncoder             h264Streaming;
 	OBSEncoder             aacRecording;
 	OBSEncoder             h264Recording;
+	OBSLSL				   lslStream;
 
+	// add some description fields
 	string                 aacRecEncID;
 	string                 aacStreamEncID;
 
@@ -191,6 +197,7 @@ struct SimpleOutput : BasicOutputHandler {
 	bool                   recordingConfigured = false;
 	bool                   ffmpegOutput = false;
 	bool                   lowCPUx264 = false;
+	bool				   lslConfigured =false;
 
 	SimpleOutput(OBSBasic *main_);
 
@@ -215,16 +222,22 @@ struct SimpleOutput : BasicOutputHandler {
 	void LoadStreamingPreset_h264(const char *encoder);
 
 	void UpdateRecording();
+	bool ConfigureLSL();
 	bool ConfigureRecording(bool useReplayBuffer);
 
 	virtual bool StartStreaming(obs_service_t *service) override;
 	virtual bool StartRecording() override;
+	virtual bool StartLSL() override;
 	virtual bool StartReplayBuffer() override;
 	virtual void StopStreaming(bool force) override;
 	virtual void StopRecording(bool force) override;
+	virtual void StopLSL() override;
 	virtual void StopReplayBuffer(bool force) override;
 	virtual bool StreamingActive() const override;
 	virtual bool RecordingActive() const override;
+	virtual bool LSLActive() const override;
+
+	virtual bool TriggerActive() const;
 	virtual bool ReplayBufferActive() const override;
 };
 
@@ -315,6 +328,7 @@ SimpleOutput::SimpleOutput(OBSBasic *main_) : BasicOutputHandler(main_)
 {
 	streamOutput = obs_output_create("rtmp_output", "simple_stream",
 			nullptr, nullptr);
+
 	if (!streamOutput)
 		throw "Failed to create stream output (simple output)";
 	obs_output_release(streamOutput);
@@ -376,7 +390,7 @@ SimpleOutput::SimpleOutput(OBSBasic *main_) : BasicOutputHandler(main_)
 		fileOutput = obs_output_create("ffmpeg_muxer",
 				"simple_file_output", nullptr, nullptr);
 		if (!fileOutput)
-			throw "Failed to create recording output "
+			throw "Failed to create frecording output "
 			      "(simple output)";
 		obs_output_release(fileOutput);
 	}
@@ -387,6 +401,8 @@ SimpleOutput::SimpleOutput(OBSBasic *main_) : BasicOutputHandler(main_)
 			"stop", OBSStopRecording, this);
 	recordStopping.Connect(obs_output_get_signal_handler(fileOutput),
 			"stopping", OBSRecordStopping, this);
+
+
 }
 
 int SimpleOutput::GetAudioBitrate() const
@@ -635,6 +651,7 @@ void SimpleOutput::UpdateRecordingSettings()
 
 inline void SimpleOutput::SetupOutputs()
 {
+
 	SimpleOutput::Update();
 	obs_encoder_set_video(h264Streaming, obs_get_video());
 	obs_encoder_set_audio(aacStreaming,  obs_get_audio());
@@ -740,6 +757,9 @@ void SimpleOutput::UpdateRecording()
 		Update();
 	}
 
+	if (lslConfigured) 
+		obs_output_set_lsl(fileOutput, lslStream);
+	
 	if (!Active())
 		SetupOutputs();
 
@@ -753,6 +773,13 @@ void SimpleOutput::UpdateRecording()
 	}
 
 	recordingConfigured = true;
+}
+
+bool SimpleOutput::ConfigureLSL()
+{
+	lslStream = obs_lsl_create();	
+	lslConfigured = true;
+	return lslConfigured;
 }
 
 bool SimpleOutput::ConfigureRecording(bool updateReplayBuffer)
@@ -863,6 +890,13 @@ bool SimpleOutput::StartRecording()
 	return true;
 }
 
+bool SimpleOutput::StartLSL()
+{
+	if (!ConfigureLSL())
+		return false;
+	return 	lslBtnActive = true;
+}
+
 bool SimpleOutput::StartReplayBuffer()
 {
 	UpdateRecording();
@@ -894,6 +928,13 @@ void SimpleOutput::StopRecording(bool force)
 		obs_output_stop(fileOutput);
 }
 
+void SimpleOutput::StopLSL()
+{
+	lslConfigured = obs_lsl_destroy(lslStream);
+	lslBtnActive = false;
+}
+
+
 void SimpleOutput::StopReplayBuffer(bool force)
 {
 	if (force)
@@ -912,6 +953,17 @@ bool SimpleOutput::RecordingActive() const
 	return obs_output_active(fileOutput);
 }
 
+bool SimpleOutput::LSLActive() const
+{	
+	return lslBtnActive;
+}
+
+bool SimpleOutput::TriggerActive() const
+{
+	return obs_output_active(triggerOutput);
+}
+
+
 bool SimpleOutput::ReplayBufferActive() const
 {
 	return obs_output_active(replayBuffer);
@@ -923,6 +975,7 @@ struct AdvancedOutput : BasicOutputHandler {
 	OBSEncoder             aacTrack[MAX_AUDIO_MIXES];
 	OBSEncoder             h264Streaming;
 	OBSEncoder             h264Recording;
+	obs_lsl				   *lsl;
 
 	bool                   ffmpegOutput;
 	bool                   ffmpegRecording;
@@ -945,10 +998,15 @@ struct AdvancedOutput : BasicOutputHandler {
 
 	virtual bool StartStreaming(obs_service_t *service) override;
 	virtual bool StartRecording() override;
+	virtual bool StartLSL() override;
 	virtual void StopStreaming(bool force) override;
 	virtual void StopRecording(bool force) override;
+	virtual void StopLSL() override;
+
 	virtual bool StreamingActive() const override;
 	virtual bool RecordingActive() const override;
+	virtual bool LSLActive() const override;
+
 };
 
 static OBSData GetDataFromJsonFile(const char *jsonFile)
@@ -1446,6 +1504,11 @@ bool AdvancedOutput::StartRecording()
 	return true;
 }
 
+bool AdvancedOutput::StartLSL()
+{
+	return true;
+}
+
 void AdvancedOutput::StopStreaming(bool force)
 {
 	if (force)
@@ -1462,6 +1525,11 @@ void AdvancedOutput::StopRecording(bool force)
 		obs_output_stop(fileOutput);
 }
 
+void AdvancedOutput::StopLSL()
+{
+}
+
+
 bool AdvancedOutput::StreamingActive() const
 {
 	return obs_output_active(streamOutput);
@@ -1470,6 +1538,11 @@ bool AdvancedOutput::StreamingActive() const
 bool AdvancedOutput::RecordingActive() const
 {
 	return obs_output_active(fileOutput);
+}
+
+bool AdvancedOutput::LSLActive() const
+{
+	return false;
 }
 
 /* ------------------------------------------------------------------------ */

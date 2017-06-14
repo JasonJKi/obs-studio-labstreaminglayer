@@ -53,6 +53,7 @@ include_directories(SYSTEM ${ZLIB_INCLUDE_DIR})
 add_definitions(-DLIBOBS_EXPORTS)
 
 include_directories(${OBS_JANSSON_INCLUDE_DIRS})
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/liblsl/bin")
 
 if(WIN32)
 	set(libobs_PLATFORM_SOURCES
@@ -321,6 +322,7 @@ set(libobs_libobs_SOURCES
 	obs-output.c
 	obs-output-delay.c
 	obs.c
+	obs-lsl.c
 	obs-properties.c
 	obs-data.c
 	obs-hotkey.c
@@ -337,6 +339,7 @@ set(libobs_libobs_HEADERS
 	obs-defs.h
 	obs-avc.h
 	obs-encoder.h
+	obs-lsl.h
 	obs-service.h
 	obs-internal.h
 	obs.h
@@ -420,6 +423,7 @@ target_include_directories(libobs
 		"$<INSTALL_INTERFACE:${OBS_INCLUDE_DESTINATION}>")
 target_link_libraries(libobs
 	PRIVATE
+		lsl64
 		${libobs_PLATFORM_DEPS}
 		${libobs_image_loading_LIBRARIES}
 		${OBS_JANSSON_IMPORT}

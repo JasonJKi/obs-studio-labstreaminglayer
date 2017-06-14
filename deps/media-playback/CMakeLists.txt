@@ -3,6 +3,7 @@ project(media-playback)
 find_package(FFmpeg REQUIRED
 	COMPONENTS avcodec avdevice avutil avformat)
 
+message(Warning "FFmpeg")
 include_directories(
 	${CMAKE_SOURCE_DIR}/libobs
 	${FFMPEG_INCLUDE_DIRS}
