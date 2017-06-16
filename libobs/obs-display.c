@@ -210,9 +210,18 @@ void render_display(struct obs_display *display)
 	pthread_mutex_unlock(&display->draw_callbacks_mutex);
 	/* -------------------------------------------- */
 
+	struct obs_core_data *data = &obs->data;
+	pthread_mutex_lock(&data->sources_mutex);
+
+	/* call the tick function of each source */
+	struct ffmpeg_source *s = data->first_source->context.data;
+
+	pthread_mutex_unlock(&data->sources_mutex);
 	bool lslActive = obs->obs_lsl_active;
+//	obs->data.
 	if (lslActive)
 	{
+
 		int b = 123l;
 		double a = obs->video.total_frames;
 		//pthread_mutex_lock(&obs->obs_lsl_global->outputs_mutex);
