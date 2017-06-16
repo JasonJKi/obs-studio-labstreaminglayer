@@ -869,9 +869,12 @@ static void receive_video(void *param, struct video_data *frame)
 	if (encoder->lsl_active)
 	{
 		pthread_mutex_lock(&encoder->obs_lsl->outputs_mutex);
+
 		send_lsl_trigger(encoder->obs_lsl, enc_frame.pts, frame->timestamp);
 		pthread_mutex_unlock(&encoder->obs_lsl->outputs_mutex);
+
 	}
+
 	do_encode(encoder, &enc_frame);
 
 	blog(LOG_INFO, "frame time '%f'...", frame->timestamp);

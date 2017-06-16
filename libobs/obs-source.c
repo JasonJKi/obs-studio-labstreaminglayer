@@ -1004,7 +1004,6 @@ void obs_source_video_tick(obs_source_t *source, float seconds)
 
 	if (source->defer_update)
 		obs_source_deferred_update(source);
-
 	/* reset the filter render texture information once every frame */
 	if (source->filter_texrender)
 		gs_texrender_reset(source->filter_texrender);

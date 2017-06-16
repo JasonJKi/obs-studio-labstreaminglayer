@@ -186,7 +186,6 @@ void render_display(struct obs_display *display)
 	/* -------------------------------------------- */
 
 	pthread_mutex_lock(&display->draw_info_mutex);
-
 	cx = display->cx;
 	cy = display->cy;
 	size_changed = display->size_changed;
@@ -194,10 +193,9 @@ void render_display(struct obs_display *display)
 	if (size_changed)
 		display->size_changed = false;
 
+
 	pthread_mutex_unlock(&display->draw_info_mutex);
-
-	/* -------------------------------------------- */
-
+		
 	render_display_begin(display, cx, cy, size_changed);
 
 	pthread_mutex_lock(&display->draw_callbacks_mutex);
@@ -210,6 +208,17 @@ void render_display(struct obs_display *display)
 	}
 
 	pthread_mutex_unlock(&display->draw_callbacks_mutex);
+	/* -------------------------------------------- */
+
+	bool lslActive = obs->obs_lsl_active;
+	if (lslActive)
+	{
+		int b = 123l;
+		double a = obs->video.total_frames;
+		//pthread_mutex_lock(&obs->obs_lsl_global->outputs_mutex);
+		send_lsl_trigger(&obs->obs_lsl_global->outlet, a, b);
+		//pthread_mutex_unlock(&obs->obs_lsl_global->outputs_mutex);
+	}
 
 	render_display_end();
 }

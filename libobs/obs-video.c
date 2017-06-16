@@ -594,6 +594,8 @@ void *obs_video_thread(void *param)
 //	obs_lsl_create();
 	os_set_thread_name("libobs: graphics thread");
 
+	obs_get_video();
+
 	const char *video_thread_name =
 		profile_store_name(obs_get_profiler_name_store(),
 			"obs_video_thread(%g"NBSP"ms)", interval / 1000000.);

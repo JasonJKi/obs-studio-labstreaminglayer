@@ -26,25 +26,24 @@
 #include "obs-internal.h"
 obs_lsl_t *obs_lsl_create() {
 	struct obs_lsl *obs_lsl;
-
 	obs_lsl = bzalloc(sizeof(struct obs_lsl));
 	bool success;
 	int c = 2;
 	init_lsl(obs_lsl);
 	pthread_mutex_lock(&obs_lsl->init_mutex);
 	success = obs_lsl_initialize_internal(obs_lsl,c);
+	obs->obs_lsl_global = obs_lsl;
+	obs->obs_lsl_active = true;
 	pthread_mutex_unlock(&obs_lsl->init_mutex);
-	
+
+
 	pthread_mutex_lock(&obs_lsl->outputs_mutex);
-	
 	double starttime;			/* used for send timing */
 
 	float cursample[2];			/* the current sample */
 	/* send data forever (note: this loop is keeping the CPU busy, normally one would sleep or yield here) */
 	printf("Now sending data...\n");
-
 	starttime = ((double)clock()) / CLOCKS_PER_SEC;
-
 	pthread_mutex_unlock(&obs_lsl->outputs_mutex);
 
 	if (success)
@@ -62,12 +61,9 @@ static inline bool obs_lsl_initialize_internal(obs_lsl_t *labStream,int c)
 	double starttime;			/* used for send timing */
 
 
-								/* declare a new streaminfo (name: BioSemi, content type: EEG, 8 channels, 100 Hz, float values, some made-up device id (can also be empty) */
 	info = lsl_create_streaminfo("OBS-Studio", "Markers", 2, 100, cft_float32, "325wqer4354");
 	char *channel_label[] = { "captured frame","time" };
 
-	/* add some meta-data fields to it */
-	/* (for more standard fields, see https://github.com/sccn/xdf/wiki/Meta-Data) */
 	desc = lsl_get_desc(info);
 	lsl_append_child_value(desc, "manufacturer", "obs");
 	chns = lsl_append_child(desc, "channels");
@@ -80,8 +76,7 @@ static inline bool obs_lsl_initialize_internal(obs_lsl_t *labStream,int c)
 	/* make a new outlet (chunking: default, buffering: 360 seconds) */
 	outlet = lsl_create_outlet(info, 0, 360);
 	labStream->outlet = outlet;
-//	obs_lsl_t *lsl_stream = { outlet };
-		return true;
+	return true;
 }
 
 bool *init_lsl(struct obs_lsl *labStream)
@@ -111,13 +106,16 @@ bool *init_lsl(struct obs_lsl *labStream)
 bool obs_lsl_destroy(obs_lsl_t* lslOutput) {
 	lsl_destroy_outlet(lslOutput->outlet);
 	lslOutput->initialized = false;
+	obs->obs_lsl_active = false;
 	return true;
 }
 
 void send_lsl_trigger(obs_lsl_t *obs_lsl,int frame_pt,double timestamp) 
 {
-	float sample[2];
-	sample[0] = (float)frame_pt;
-	sample[1] = (float) timestamp;
-	lsl_push_sample_f(obs_lsl->outlet, sample);
+
+	double sample[2];
+	sample[0] = (double) frame_pt;
+	sample[1] = (double) timestamp;
+	lsl_push_sample_d(obs_lsl->outlet, sample);
+
 }

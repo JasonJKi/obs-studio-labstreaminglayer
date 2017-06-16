@@ -1129,6 +1129,11 @@ video_t *obs_get_video(void)
 	return (obs != NULL) ? obs->video.video : NULL;
 }
 
+obs_lsl_t *obs_get_lsl(void)
+{
+	return (obs != NULL) ? obs->data.first_output->obs_lsl : NULL;
+}
+
 /* TODO: optimize this later so it's not just O(N) string lookups */
 static inline struct obs_modal_ui *get_modal_ui_callback(const char *id,
 		const char *task, const char *target)

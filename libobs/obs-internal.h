@@ -46,22 +46,20 @@
 struct obs_lsl {
 	lsl_outlet						outlet;			/* stream outlet */
 
-	char data;
-	double timestamp;
-	int pushthrough;
+
 
 	pthread_mutex_t                 init_mutex;
 	pthread_mutex_t					outputs_mutex;
 	pthread_mutex_t					callbacks_mutex;
 
 	bool							initialized;
-/*	char *name;
+
+	char *name;
 	char *type;
 	int channel_count;
 	double nominal_srate;
 	lsl_channel_format_t channel_format;
 	char *source_id;
-	struct obs_lsl              *lsl; */
 
 } ;
 
@@ -242,6 +240,7 @@ struct obs_display {
 	pthread_mutex_t                 draw_info_mutex;
 	DARRAY(struct draw_callback)    draw_callbacks;
 
+	char							source_type;
 	struct obs_display              *next;
 	struct obs_display              **prev_next;
 };
@@ -429,6 +428,8 @@ struct obs_core {
 	struct obs_core_audio           audio;
 	struct obs_core_data            data;
 	struct obs_core_hotkeys         hotkeys;
+	obs_lsl_t						*obs_lsl_global;
+	bool							*obs_lsl_active;
 };
 
 extern struct obs_core *obs;
