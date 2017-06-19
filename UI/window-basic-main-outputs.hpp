@@ -19,6 +19,9 @@ struct BasicOutputHandler {
 	OBSSignal              stopRecording;
 	OBSSignal			   startLSL;
 	OBSSignal			   stopLSL;
+	OBSSignal			   startMedia;
+	OBSSignal			   stopMedia;
+	OBSSignal			   pauseMedia;
 	OBSSignal              startReplayBuffer;
 	OBSSignal              stopReplayBuffer;
 	OBSSignal              startStreaming;

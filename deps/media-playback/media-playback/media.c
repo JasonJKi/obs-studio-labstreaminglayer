@@ -15,6 +15,8 @@
  */
 
 #include <obs.h>
+#include "obs-internal.h"
+
 #include <util/platform.h>
 
 #include <assert.h>
@@ -524,6 +526,10 @@ static void *mp_media_thread(void *opaque)
 		is_active = m->active;
 		pthread_mutex_unlock(&m->mutex);
 
+		//	obs->data.
+		//pthread_mutex_lock(&obs->obs_lsl_global->outputs_mutex);
+		//pthread_mutex_unlock(&obs->obs_lsl_global->outputs_mutex);
+
 		if (!is_active) {
 			if (os_sem_wait(m->sem) < 0)
 				return NULL;
@@ -601,6 +607,7 @@ bool mp_media_init(mp_media_t *media,
 		mp_video_cb v_cb,
 		mp_audio_cb a_cb,
 		mp_stop_cb stop_cb,
+		mp_pause_cb pause_cb,
 		mp_video_cb v_preload_cb,
 		bool hw_decoding,
 		enum video_range_type force_range)
@@ -611,6 +618,8 @@ bool mp_media_init(mp_media_t *media,
 	media->v_cb = v_cb;
 	media->a_cb = a_cb;
 	media->stop_cb = stop_cb;
+	media->pause_cb = stop_cb;
+
 	media->v_preload_cb = v_preload_cb;
 	media->force_range = force_range;
 
@@ -693,5 +702,17 @@ void mp_media_stop(mp_media_t *m)
 		m->stopping = true;
 		os_sem_post(m->sem);
 	}
+	pthread_mutex_unlock(&m->mutex);
+}
+
+void mp_media_pause(mp_media_t *m)
+{
+	pthread_mutex_lock(&m->mutex);
+
+	if (m->active) {
+		m->reset = false;
+		m->pausing = true;
+	}
+	os_sem_post(m->sem);
 	pthread_mutex_unlock(&m->mutex);
 }

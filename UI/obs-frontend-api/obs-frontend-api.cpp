@@ -205,6 +205,29 @@ bool obs_frontend_recording_active(void)
 		: false;
 }
 
+void obs_frontend_media_start(void)
+{
+	if (callbacks_valid()) c->obs_frontend_media_start();
+
+}
+
+void obs_frontend_media_stop(void)
+{
+	if (callbacks_valid()) c->obs_frontend_media_stop();
+
+}
+
+void obs_frontend_media_pause(void)
+{
+	if (callbacks_valid()) c->obs_frontend_media_pause();
+}
+
+bool obs_frontend_media_active(void)
+{
+	return !!callbacks_valid()
+		? c->obs_frontend_media_active()
+		: false;
+}
 void obs_frontend_replay_buffer_start(void)
 {
 	if (callbacks_valid()) c->obs_frontend_replay_buffer_start();

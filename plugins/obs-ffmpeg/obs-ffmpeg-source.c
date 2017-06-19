@@ -48,6 +48,7 @@ struct ffmpeg_source {
 	enum video_range_type range;
 	obs_source_t *source;
 	obs_hotkey_id hotkey;
+	obs_hotkey_id hotkey2;
 
 	char *input;
 	char *input_format;
@@ -56,6 +57,7 @@ struct ffmpeg_source {
 	bool is_hw_decoding;
 	bool is_clear_on_media_end;
 	bool restart_on_activate;
+	bool pause_on_hotkey;
 	bool close_when_inactive;
 };
 
@@ -202,6 +204,7 @@ static void dump_source_info(struct ffmpeg_source *s, const char *input,
 static void get_frame(void *opaque, struct obs_source_frame *f)
 {
 	struct ffmpeg_source *s = opaque;
+	f->frametime = s->media.next_pts_ns;
 	obs_source_output_video(s->source, f);
 }
 
@@ -227,12 +230,22 @@ static void media_stopped(void *opaque)
 	}
 }
 
+static void media_paused(void *opaque)
+{
+	struct ffmpeg_source *s = opaque;
+	if (s->is_clear_on_media_end) {
+		obs_source_output_video(s->source, NULL);
+		if (s->close_when_inactive)
+			s->destroy_media = true;
+	}
+}
+
 static void ffmpeg_source_open(struct ffmpeg_source *s)
 {
 	if (s->input && *s->input)
 		s->media_valid = mp_media_init(&s->media,
 				s->input, s->input_format,
-				s, get_frame, get_audio, media_stopped,
+				s, get_frame, get_audio, media_stopped, media_paused,
 				preload_frame, s->is_hw_decoding, s->range);
 }
 
@@ -260,6 +273,17 @@ static void ffmpeg_source_start(struct ffmpeg_source *s)
 	}
 }
 
+static void ffmpeg_source_pause(struct ffmpeg_source *s)
+{
+	if (!s->media_valid)
+		ffmpeg_source_open(s);
+
+	if (s->media_valid) {
+		mp_media_pause(&s->media, s->is_looping);
+		if (s->is_local_file)
+			obs_source_show_preloaded_video(s->source);
+	}
+}
 static void ffmpeg_source_update(void *data, obs_data_t *settings)
 {
 	struct ffmpeg_source *s = data;
@@ -268,7 +292,6 @@ static void ffmpeg_source_update(void *data, obs_data_t *settings)
 
 	char *input;
 	char *input_format;
-
 	bfree(s->input);
 	bfree(s->input_format);
 
@@ -311,8 +334,8 @@ static void ffmpeg_source_update(void *data, obs_data_t *settings)
 		ffmpeg_source_open(s);
 
 	dump_source_info(s, input, input_format);
-	if (!s->restart_on_activate || active)
-		ffmpeg_source_start(s);
+	if (!s->restart_on_activate || active);
+		//ffmpeg_source_start(s);
 }
 
 static const char *ffmpeg_source_getname(void *unused)
@@ -334,6 +357,20 @@ static bool restart_hotkey(void *data, obs_hotkey_id id,
 	return true;
 }
 
+static bool pause_hotkey(void *data, obs_hotkey_id id,
+	obs_hotkey_t *hotkey, bool pressed)
+{
+	UNUSED_PARAMETER(id);
+	UNUSED_PARAMETER(hotkey);
+	UNUSED_PARAMETER(pressed);
+
+	struct ffmpeg_source *s = data;
+	if (obs_source_active(s->source))
+		ffmpeg_source_pause(s);
+	return true;
+}
+
+
 static void restart_proc(void *data, calldata_t *cd)
 {
 	restart_hotkey(data, 0, NULL, true);
@@ -351,6 +388,11 @@ static void *ffmpeg_source_create(obs_data_t *settings, obs_source_t *source)
 			"MediaSource.Restart",
 			obs_module_text("RestartMedia"),
 			restart_hotkey, s);
+
+	s->hotkey2 = obs_hotkey_register_source(source,
+			"MediaSource.Pause",
+			obs_module_text("PauseMedia"),
+			pause_hotkey, s);
 
 	proc_handler_t *ph = obs_source_get_proc_handler(source);
 	proc_handler_add(ph, "void restart()", restart_proc, s);

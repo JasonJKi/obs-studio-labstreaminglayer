@@ -762,9 +762,8 @@ uint32_t obs_get_source_output_flags(const char *id)
 static void obs_source_deferred_update(obs_source_t *source)
 {
 	if (source->context.data && source->info.update)
-		source->info.update(source->context.data,
-				source->context.settings);
-
+		source->info.update(source->context.data,source->context.settings);
+	struct ffmpeg_source *t = source->context.settings;
 	source->defer_update = false;
 }
 
@@ -2281,6 +2280,7 @@ static inline struct obs_source_frame *cache_video(struct obs_source *source,
 		source->async_cache_height = frame->height;
 		source->async_cache_format = frame->format;
 	}
+	source->media_frame_ts = frame->frametime;
 
 	for (size_t i = 0; i < source->async_cache.num; i++) {
 		struct async_frame *af = &source->async_cache.array[i];
@@ -2385,6 +2385,7 @@ void obs_source_preload_video(obs_source_t *source,
 			source->async_texrender);
 
 	source->last_frame_ts = frame->timestamp;
+	source->media_frame_ts = frame->frametime;
 
 	obs_leave_graphics();
 }

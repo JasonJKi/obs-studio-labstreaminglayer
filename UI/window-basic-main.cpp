@@ -4308,6 +4308,18 @@ void OBSBasic::StopLSL()
 	outputHandler->StopLSL();
 }
 
+void OBSBasic::MediaStart()
+{
+}
+
+void OBSBasic::MediaStop()
+{
+}
+
+void OBSBasic::MediaPause()
+{
+}
+
 void OBSBasic::RecordingStart()
 {
 	ui->statusbar->RecordingStarted(outputHandler->fileOutput);
@@ -4552,6 +4564,19 @@ void OBSBasic::on_lslButton_clicked()
 void OBSBasic::on_settingsButton_clicked()
 {
 	on_action_Settings_triggered();
+}
+
+void OBSBasic::on_playButton_clicked()
+{
+
+}
+
+void OBSBasic::on_pausedButton_clicked()
+{
+}
+
+void OBSBasic::on_stopButton_clicked()
+{
 }
 
 void OBSBasic::on_actionWebsite_triggered()

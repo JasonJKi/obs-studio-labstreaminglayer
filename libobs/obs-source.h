@@ -222,6 +222,7 @@ struct obs_source_info {
 	/** Called when the source has been activated in the main view */
 	void (*activate)(void *data);
 
+
 	/**
 	 * Called when the source has been deactivated from the main view
 	 * (no longer being played/displayed)

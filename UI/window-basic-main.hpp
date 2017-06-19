@@ -378,6 +378,9 @@ public slots:
 
 	void StartLSL();
 	void StopLSL();
+	void MediaStart();
+	void MediaStop();
+	void MediaPause();
 
 	void RecordingStart();
 	void RecordStopping();
@@ -598,6 +601,10 @@ private slots:
 	void on_recordButton_clicked();
 	void on_lslButton_clicked();
 	void on_settingsButton_clicked();
+
+	void on_playButton_clicked();
+	void on_pausedButton_clicked();
+	void on_stopButton_clicked();
 
 	void on_actionWebsite_triggered();
 
