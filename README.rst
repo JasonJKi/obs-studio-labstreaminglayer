@@ -1,4 +1,4 @@
-OBS Studio with Lab Streaming layer for frame time locking  <https://obsproject.com>
+OBS Studio with Lab Streaming layer for frame time locking 
 ===================================
 #OBS github <https://github.com/jp9000/obs-studio/wiki>
 
