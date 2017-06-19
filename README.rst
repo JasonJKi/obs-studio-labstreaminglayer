@@ -1,4 +1,4 @@
-OBS Studio with Lab Streaming layer for frame time locking 
+OBS Studio for sending frame time locked trigger with Lab Streaming layer 
 ===================================
 #OBS github <https://github.com/jp9000/obs-studio/wiki>
 
