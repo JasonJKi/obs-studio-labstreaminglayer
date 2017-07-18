@@ -335,8 +335,8 @@ bool mp_decode_next(struct mp_decode *d)
 		d->frame_pts = av_rescale_q(d->frame->best_effort_timestamp,
 				d->stream->time_base,
 				(AVRational){1, 1000000000});
-
 		int64_t duration = d->frame->pkt_duration;
+		d->frame_num++;
 		if (!duration)
 			duration = get_estimated_duration(d, last_pts);
 		else
@@ -345,6 +345,7 @@ bool mp_decode_next(struct mp_decode *d)
 					(AVRational){1, 1000000000});
 		d->last_duration = duration;
 		d->next_pts = d->frame_pts + duration;
+
 	}
 
 	return true;
@@ -356,5 +357,6 @@ void mp_decode_flush(struct mp_decode *d)
 	mp_decode_clear_packets(d);
 	d->eof = false;
 	d->frame_pts = 0;
+	d->frame_num = 0;
 	d->frame_ready = false;
 }

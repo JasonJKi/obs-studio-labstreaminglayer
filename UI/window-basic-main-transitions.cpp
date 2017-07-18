@@ -1067,7 +1067,7 @@ void OBSBasic::RenderProgram(void *data, uint32_t cx, uint32_t cy)
 	gs_set_viewport(window->programX, window->programY,
 			window->programCX, window->programCY);
 
-	window->DrawBackdrop(float(ovi.base_width), float(ovi.base_height));
+	//window->DrawBackdrop(float(ovi.base_width), float(ovi.base_height));
 
 	obs_render_main_view();
 	gs_load_vertexbuffer(nullptr);

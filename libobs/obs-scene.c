@@ -547,7 +547,6 @@ static void scene_video_render(void *data, gs_effect_t *effect)
 
 		if (item->user_visible)
 			render_item(item);
-
 		item = item->next;
 	}
 

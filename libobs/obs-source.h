@@ -185,7 +185,7 @@ struct obs_source_info {
 	 * from destroy
 	 */
 	void (*destroy)(void *data);
-
+	void (*start)(void* data);
 	/** Returns the width of the source.  Required if this is an input
 	 * source and has non-async video */
 	uint32_t (*get_width)(void *data);

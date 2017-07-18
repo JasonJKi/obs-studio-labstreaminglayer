@@ -39,6 +39,7 @@ static uint64_t tick_sources(uint64_t cur_time, uint64_t last_time)
 
 	/* call the tick function of each source */
 	source = data->first_source;
+
 	while (source) {
 		obs_source_video_tick(source, seconds);
 		source = (struct obs_source*)source->context.next;
@@ -51,7 +52,6 @@ static uint64_t tick_sources(uint64_t cur_time, uint64_t last_time)
 
 /* in obs-display.c */
 extern void render_display(struct obs_display *display);
-
 static inline void render_displays(void)
 {
 	struct obs_display *display;
@@ -60,19 +60,32 @@ static inline void render_displays(void)
 		return;
 
 	gs_enter_context(obs->video.graphics);
-
+	struct obs_core *obs_;
+	obs_ = obs;
 	/* render extra displays/swaps */
 	pthread_mutex_lock(&obs->data.displays_mutex);
 
 	display = obs->data.first_display;
+
 	while (display) {
 		render_display(display);
+		if (obs->obs_lsl_active) {
+			double sample[2];
+			bool media_rendered = obs->media_rendered_for_display;
+			if (media_rendered) {
+				sample[0] = *obs->media_frametime;
+				sample[1] = *obs->media_frame_number;
+				send_lsl_frame_marker(&obs->obs_lsl_global->outlet, sample);
+			}
+		}
 		display = display->next;
 	}
 
+	
 	pthread_mutex_unlock(&obs->data.displays_mutex);
-
 	gs_leave_context();
+	
+
 }
 
 static inline void set_render_size(uint32_t width, uint32_t height)
@@ -591,7 +604,6 @@ void *obs_video_thread(void *param)
 	uint32_t fps_total_frames = 0;
 
 	obs->video.video_time = os_gettime_ns();
-//	obs_lsl_create();
 	os_set_thread_name("libobs: graphics thread");
 
 	obs_get_video();
@@ -606,7 +618,7 @@ void *obs_video_thread(void *param)
 		uint64_t frame_time_ns;
 
 		profile_start(video_thread_name);
-
+		
 		profile_start(tick_sources_name);
 		last_time = tick_sources(obs->video.video_time, last_time);
 		profile_end(tick_sources_name);
@@ -614,10 +626,12 @@ void *obs_video_thread(void *param)
 		profile_start(render_displays_name);			
 		render_displays();
 		profile_end(render_displays_name);
-
+	
+		
 		profile_start(output_frame_name);
 		output_frame();
 		profile_end(output_frame_name);
+		
 
 		frame_time_ns = os_gettime_ns() - frame_start;
 
@@ -630,7 +644,7 @@ void *obs_video_thread(void *param)
 		frame_time_total_ns += frame_time_ns;
 		fps_total_ns += (obs->video.video_time - last_time);
 		fps_total_frames++;
-
+	
 		if (fps_total_ns >= 1000000000ULL) {
 			obs->video.video_fps = (double)fps_total_frames /
 				((double)fps_total_ns / 1000000000.0);

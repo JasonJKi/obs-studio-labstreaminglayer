@@ -195,40 +195,34 @@ void render_display(struct obs_display *display)
 
 
 	pthread_mutex_unlock(&display->draw_info_mutex);
+	
 		
 	render_display_begin(display, cx, cy, size_changed);
 
 	pthread_mutex_lock(&display->draw_callbacks_mutex);
-
 	for (size_t i = 0; i < display->draw_callbacks.num; i++) {
 		struct draw_callback *callback;
-		callback = display->draw_callbacks.array+i;
-
+		callback = display->draw_callbacks.array + i;
 		callback->draw(callback->param, cx, cy);
+		/*
+		if (obs->obs_lsl_active) {
+			double sample[2];
+			bool media_rendered = obs->media_rendered_for_display;
+			if (media_rendered) {
+				sample[0] = *obs->media_frametime;
+				sample[1] = *obs->media_frame_number;
+				send_lsl_frame_marker(&obs->obs_lsl_global->outlet, sample);
+			}
+		}
+		*/
 	}
+
 
 	pthread_mutex_unlock(&display->draw_callbacks_mutex);
 	/* -------------------------------------------- */
-
-	struct obs_core_data *data = &obs->data;
-	pthread_mutex_lock(&data->outputs_mutex);
-
-	/* call the tick function of each source */
-
-	pthread_mutex_unlock(&data->outputs_mutex);
-	bool lslActive = obs->obs_lsl_active;
-	
-	//	obs->data.
-	if (lslActive)
-	{
-		int b = data->first_source->last_frame_ts;
-		double a = data->first_source->media_frame_ts;
-		//pthread_mutex_lock(&obs->obs_lsl_global->outputs_mutex);
-		send_lsl_trigger(&obs->obs_lsl_global->outlet, a, b);
-		//pthread_mutex_unlock(&obs->obs_lsl_global->outputs_mutex);
-	}
-
 	render_display_end();
+
+
 }
 
 void obs_display_set_enabled(obs_display_t *display, bool enable)

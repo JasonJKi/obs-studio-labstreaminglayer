@@ -346,6 +346,8 @@ static void mp_media_next_video(mp_media_t *m, bool preload)
 
 	frame->timestamp = m->base_ts + d->frame_pts - m->start_ts +
 		m->play_sys_ts - base_sys_ts;
+	frame->media_frametime = d->frame_pts;
+	frame->media_framenumber = d->frame_num;
 	frame->width = f->width;
 	frame->height = f->height;
 	frame->flip = false;
@@ -520,15 +522,12 @@ static void *mp_media_thread(void *opaque)
 	mp_media_reset(m);
 
 	for (;;) {
-		bool reset, kill, is_active;
+		bool reset, kill, is_active, paused;
 
 		pthread_mutex_lock(&m->mutex);
 		is_active = m->active;
+		paused = m->pausing;
 		pthread_mutex_unlock(&m->mutex);
-
-		//	obs->data.
-		//pthread_mutex_lock(&obs->obs_lsl_global->outputs_mutex);
-		//pthread_mutex_unlock(&obs->obs_lsl_global->outputs_mutex);
 
 		if (!is_active) {
 			if (os_sem_wait(m->sem) < 0)
@@ -565,11 +564,9 @@ static void *mp_media_thread(void *opaque)
 				return NULL;
 			if (mp_media_eof(m))
 				continue;
-
 			mp_media_calc_next_ns(m);
 		}
 	}
-
 	return NULL;
 }
 
@@ -607,7 +604,6 @@ bool mp_media_init(mp_media_t *media,
 		mp_video_cb v_cb,
 		mp_audio_cb a_cb,
 		mp_stop_cb stop_cb,
-		mp_pause_cb pause_cb,
 		mp_video_cb v_preload_cb,
 		bool hw_decoding,
 		enum video_range_type force_range)
@@ -618,10 +614,10 @@ bool mp_media_init(mp_media_t *media,
 	media->v_cb = v_cb;
 	media->a_cb = a_cb;
 	media->stop_cb = stop_cb;
-	media->pause_cb = stop_cb;
 
 	media->v_preload_cb = v_preload_cb;
 	media->force_range = force_range;
+	media->pausing = false;
 
 	if (path && *path)
 		media->is_network = !!strstr(path, "://");
@@ -708,11 +704,17 @@ void mp_media_stop(mp_media_t *m)
 void mp_media_pause(mp_media_t *m)
 {
 	pthread_mutex_lock(&m->mutex);
-
 	if (m->active) {
-		m->reset = false;
-		m->pausing = true;
+		if (m->pausing){
+			m->pausing = false;
+			m->active = false;
+			os_sem_post(m->sem);
+		}else {
+			m->pausing = true;
+			m->active = true;
+		}
+	} else {
+		return;
 	}
-	os_sem_post(m->sem);
 	pthread_mutex_unlock(&m->mutex);
 }

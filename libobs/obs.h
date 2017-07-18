@@ -235,7 +235,8 @@ struct obs_source_frame {
 	bool                prev_frame;
 
 	double				frametime;
-	double				frameNumber;
+	double				media_frametime;
+	double				media_framenumber;
 };
 
 /* ------------------------------------------------------------------------- */
@@ -1373,7 +1374,7 @@ EXPORT void obs_lsl_stop(obs_output_t *output);
 /** initialize LSL **/
 EXPORT obs_lsl_t *obs_lsl_create();
 EXPORT bool obs_lsl_destroy(obs_lsl_t* lslOutput);
-EXPORT void send_lsl_trigger(obs_lsl_t *obs_lsl,int frame_pt, double timestamp );
+EXPORT void send_lsl_frame_marker(obs_lsl_t *obs_lsl,double sample[]);
 EXPORT void obs_output_set_lsl(obs_output_t *output,obs_lsl_t *obs_lsl);
 
 //EXPORT lsl_outlet create_lsl_stream(obs_encoder_t *encoder);

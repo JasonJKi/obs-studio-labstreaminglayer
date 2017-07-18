@@ -41,8 +41,6 @@
 #include <time.h>
 #include <stdlib.h>
 
-#include <liblsl/lsl_c.h>
-
 class QMessageBox;
 class QListWidgetItem;
 class VolControl;
@@ -378,7 +376,7 @@ public slots:
 
 	void StartLSL();
 	void StopLSL();
-	void MediaStart();
+	void MediaPlay();
 	void MediaStop();
 	void MediaPause();
 

@@ -41,15 +41,12 @@ extern "C" {
 typedef void (*mp_video_cb)(void *opaque, struct obs_source_frame *frame);
 typedef void (*mp_audio_cb)(void *opaque, struct obs_source_audio *audio);
 typedef void (*mp_stop_cb)(void *opaque);
-typedef void(*mp_pause_cb)(void *opaque);
-
 
 struct mp_media {
 	AVFormatContext *fmt;
 
 	mp_video_cb v_preload_cb;
 	mp_stop_cb stop_cb;
-	mp_pause_cb pause_cb;
 
 	mp_video_cb v_cb;
 	mp_audio_cb a_cb;
@@ -105,12 +102,10 @@ extern bool mp_media_init(mp_media_t *media,
 		mp_video_cb v_cb,
 		mp_audio_cb a_cb,
 		mp_stop_cb stop_cb,
-		mp_pause_cb pause_cb,
 		mp_video_cb v_preload_cb,
 		bool hardware_decoding,
 		enum video_range_type force_range);
 extern void mp_media_free(mp_media_t *media);
-
 extern void mp_media_play(mp_media_t *media, bool loop);
 extern void mp_media_stop(mp_media_t *media);
 extern void mp_media_pause(mp_media_t *media);

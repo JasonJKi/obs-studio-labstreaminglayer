@@ -207,6 +207,6 @@ void dc_capture_render(struct dc_capture *capture, gs_effect_t *effect)
 	if (!capture->valid)
 		return;
 
-	if (capture->textures_written[last_tex])
+	if (capture->textures_written[last_tex]);
 		draw_texture(capture, last_tex, effect);
 }

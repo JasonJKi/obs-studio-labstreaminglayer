@@ -2162,7 +2162,7 @@ void OBSBasic::VolControlContextMenu()
 	connect(&propertiesAction, &QAction::triggered,
 			this, &OBSBasic::GetAudioSourceProperties,
 			Qt::DirectConnection);
-
+	
 	filtersAction.setProperty("volControl",
 			QVariant::fromValue<VolControl*>(vol));
 	propertiesAction.setProperty("volControl",
@@ -2582,7 +2582,7 @@ void OBSBasic::RenderMain(void *data, uint32_t cx, uint32_t cy)
 	gs_set_viewport(window->previewX, window->previewY,
 			window->previewCX, window->previewCY);
 
-	window->DrawBackdrop(float(ovi.base_width), float(ovi.base_height));
+	//window->DrawBackdrop(float(ovi.base_width), float(ovi.base_height));
 
 	if (window->IsPreviewProgramMode()) {
 		OBSScene scene = window->GetCurrentScene();
@@ -2605,7 +2605,7 @@ void OBSBasic::RenderMain(void *data, uint32_t cx, uint32_t cy)
 	         -100.0f, 100.0f);
 	gs_reset_viewport();
 
-	window->ui->preview->DrawSceneEditing();
+	//window->ui->preview->DrawSceneEditing();
 
 	/* --------------------------------------- */
 
@@ -4308,7 +4308,7 @@ void OBSBasic::StopLSL()
 	outputHandler->StopLSL();
 }
 
-void OBSBasic::MediaStart()
+void OBSBasic::MediaPlay()
 {
 }
 
@@ -4568,7 +4568,8 @@ void OBSBasic::on_settingsButton_clicked()
 
 void OBSBasic::on_playButton_clicked()
 {
-
+	OBSSceneItem item = GetCurrentSceneItem();
+	OBSSource source = obs_sceneitem_get_source(item);
 }
 
 void OBSBasic::on_pausedButton_clicked()

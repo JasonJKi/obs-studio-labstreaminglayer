@@ -240,6 +240,9 @@ struct obs_display {
 	pthread_mutex_t                 draw_info_mutex;
 	DARRAY(struct draw_callback)    draw_callbacks;
 
+	double							media_frametime;
+	double							media_framenum;
+	double							timestamp;
 	char							source_type;
 	struct obs_display              *next;
 	struct obs_display              **prev_next;
@@ -430,6 +433,10 @@ struct obs_core {
 	struct obs_core_hotkeys         hotkeys;
 	obs_lsl_t						*obs_lsl_global;
 	bool							*obs_lsl_active;
+	double							*media_frametime;
+	double							*media_frame_number;
+	bool							*media_rendered_for_display;
+
 };
 
 extern struct obs_core *obs;
@@ -605,6 +612,7 @@ struct obs_source {
 	uint64_t                        last_sys_timestamp;
 	bool                            async_rendered;
 	double                          media_frame_ts;
+	double							media_frame_num;
 
 	/* audio */
 	bool                            audio_failed;

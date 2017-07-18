@@ -983,9 +983,9 @@ static void async_tick(obs_source_t *source)
 	source->last_sys_timestamp = sys_time;
 	pthread_mutex_unlock(&source->async_mutex);
 
-	if (source->cur_async_frame)
+	if (source->cur_async_frame){
 		source->async_update_texture = set_async_texture_size(source,
-				source->cur_async_frame);
+				source->cur_async_frame);}
 }
 
 void obs_source_video_tick(obs_source_t *source, float seconds)
@@ -1620,11 +1620,23 @@ static inline void obs_source_draw_texture(struct obs_source *source,
 		param = gs_effect_get_param_by_name(effect, "color_matrix");
 		gs_effect_set_val(param, color_matrix, sizeof(float) * 16);
 	}
-
+	
 	param = gs_effect_get_param_by_name(effect, "image");
 	gs_effect_set_texture(param, tex);
 
 	gs_draw_sprite(tex, source->async_flip ? GS_FLIP_V : 0, 0, 0);
+
+	/*
+	if (obs->obs_lsl_active) {
+		double sample[2];
+		bool media_rendered = obs->media_rendered_for_display;
+		if (media_rendered) {
+			sample[0] = *obs->media_frametime;
+			sample[1] = *obs->media_frame_number;
+			send_lsl_frame_marker(&obs->obs_lsl_global->outlet, sample);
+		}
+	}
+	*/
 }
 
 static void obs_source_draw_async_texture(struct obs_source *source)
@@ -1663,6 +1675,7 @@ static void obs_source_update_async_video(obs_source_t *source)
 			frame = filter_async_video(source, frame);
 
 		source->async_rendered = true;
+		obs->media_rendered_for_display = false;
 		if (frame) {
 			source->timing_adjust =
 				os_gettime_ns() - frame->timestamp;
@@ -1672,18 +1685,23 @@ static void obs_source_update_async_video(obs_source_t *source)
 				update_async_texture(source, frame,
 						source->async_texture,
 						source->async_texrender);
-				source->async_update_texture = false;
+				obs->media_frametime = &frame->media_frametime;
+				obs->media_frame_number = &frame->media_framenumber;
+				obs->media_rendered_for_display = true;
 			}
-
 			obs_source_release_frame(source, frame);
 		}
+		source->async_update_texture = false;
+
 	}
 }
 
 static inline void obs_source_render_async_video(obs_source_t *source)
 {
-	if (source->async_texture && source->async_active)
+	if (source->async_texture && source->async_active) {
 		obs_source_draw_async_texture(source);
+	}
+
 }
 
 static inline void obs_source_render_filters(obs_source_t *source)
@@ -1719,9 +1737,10 @@ static inline void obs_source_main_render(obs_source_t *source)
 
 	if (default_effect)
 		obs_source_default_render(source);
-	else if (source->context.data)
+	else if (source->context.data) {
 		source->info.video_render(source->context.data,
-				custom_draw ? NULL : gs_get_effect());
+			custom_draw ? NULL : gs_get_effect());
+	}
 }
 
 static bool ready_async_frame(obs_source_t *source, uint64_t sys_time);
@@ -1733,8 +1752,8 @@ static inline void render_video(obs_source_t *source)
 		return;
 
 	if (source->info.type == OBS_SOURCE_TYPE_INPUT &&
-	    (source->info.output_flags & OBS_SOURCE_ASYNC) != 0 &&
-	    !source->rendering_filter) {
+		(source->info.output_flags & OBS_SOURCE_ASYNC) != 0 &&
+		!source->rendering_filter) {
 		if (deinterlacing_enabled(source))
 			deinterlace_update_async_video(source);
 		obs_source_update_async_video(source);
@@ -1745,19 +1764,15 @@ static inline void render_video(obs_source_t *source)
 			obs_source_skip_video_filter(source);
 		return;
 	}
-
 	if (source->filters.num && !source->rendering_filter)
 		obs_source_render_filters(source);
-
-	else if (source->info.video_render)
+	else if (source->info.video_render) {
 		obs_source_main_render(source);
-
+	}
 	else if (source->filter_target)
 		obs_source_video_render(source->filter_target);
-
 	else if (deinterlacing_enabled(source))
 		deinterlace_render(source);
-
 	else
 		obs_source_render_async_video(source);
 }
@@ -2280,12 +2295,13 @@ static inline struct obs_source_frame *cache_video(struct obs_source *source,
 		source->async_cache_height = frame->height;
 		source->async_cache_format = frame->format;
 	}
-	source->media_frame_ts = frame->frametime;
 
 	for (size_t i = 0; i < source->async_cache.num; i++) {
 		struct async_frame *af = &source->async_cache.array[i];
 		if (!af->used) {
 			new_frame = af->frame;
+			new_frame->media_frametime = frame->media_frametime;
+			new_frame->media_framenumber = frame->media_framenumber;
 			af->used = true;
 			af->unused_count = 0;
 			break;
@@ -2340,7 +2356,6 @@ void obs_source_output_video(obs_source_t *source,
 		cache_video(source, frame) : NULL;
 
 	/* ------------------------------------------- */
-
 	if (output) {
 		pthread_mutex_lock(&source->async_mutex);
 		da_push_back(source->async_frames, &output);
@@ -2384,8 +2399,9 @@ void obs_source_preload_video(obs_source_t *source,
 			source->async_texture,
 			source->async_texrender);
 
-	source->last_frame_ts = frame->timestamp;
-	source->media_frame_ts = frame->frametime;
+	source->last_frame_ts = frame->frametime;
+	source->media_frame_ts = -100;
+	source->media_frame_num = -100;
 
 	obs_leave_graphics();
 }
@@ -2693,8 +2709,9 @@ static inline struct obs_source_frame *get_closest_frame(obs_source_t *source,
 		struct obs_source_frame *frame = source->async_frames.array[0];
 		da_erase(source->async_frames, 0);
 
-		if (!source->last_frame_ts)
+		if (!source->last_frame_ts) {
 			source->last_frame_ts = frame->timestamp;
+		}
 
 		return frame;
 	}

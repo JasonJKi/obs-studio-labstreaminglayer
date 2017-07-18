@@ -869,8 +869,10 @@ static void receive_video(void *param, struct video_data *frame)
 	if (encoder->lsl_active)
 	{
 		pthread_mutex_lock(&encoder->obs_lsl->outputs_mutex);
-
-		send_lsl_trigger(encoder->obs_lsl, enc_frame.pts, frame->timestamp);
+		double sample[2];
+		sample[0] = (double)enc_frame.pts / 1000000;
+		sample[1] = (double)frame->timestamp / 1000000;
+		send_lsl_frame_marker(encoder->obs_lsl, sample);
 		pthread_mutex_unlock(&encoder->obs_lsl->outputs_mutex);
 
 	}
