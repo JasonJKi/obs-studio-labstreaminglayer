@@ -1,5 +1,6 @@
 project(obs-filters)
 
+#[[
 find_package(Libspeexdsp QUIET)
 if(LIBSPEEXDSP_FOUND)
 	set(obs-filters_LIBSPEEXDSP_SOURCES
@@ -9,7 +10,7 @@ if(LIBSPEEXDSP_FOUND)
 else()
 	message(STATUS "Speexdsp library not found, speexdsp filters disabled")
 endif()
-
+]]
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/obs-filters-config.h.in"
 	"${CMAKE_BINARY_DIR}/plugins/obs-filters/config/obs-filters-config.h")
 

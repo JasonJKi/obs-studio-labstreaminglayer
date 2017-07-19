@@ -14,9 +14,9 @@ Copyright(c) 2005-2014 Intel Corporation. All Rights Reserved.
 
 #ifdef DX9_D3D
 #include "common_directx.h"
-#elif DX11_D3D
-#include "common_directx11.h"
-#include "common_directx9.h"
+//lif DX11_D3D
+//nclude "common_directx11.h"
+//nclude "common_directx9.h"
 #endif
 
 /* =======================================================
@@ -38,11 +38,11 @@ mfxStatus Initialize(mfxIMPL impl, mfxVersion ver, MFXVideoSession* pSession, mf
 
         // Create DirectX device context
         mfxHDL deviceHandle;
-        sts = CreateHWDevice(*pSession, &deviceHandle, NULL, bCreateSharedHandles);
+       //ts = CreateHWDevice(*pSession, &deviceHandle, NULL, bCreateSharedHandles);
         MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 
         // Provide device manager to Media SDK
-        sts = pSession->SetHandle(DEVICE_MGR_TYPE, deviceHandle);
+       //ts = pSession->SetHandle(DEVICE_MGR_TYPE, deviceHandle);
         MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 
         pmfxAllocator->pthis  = *pSession; // We use Media SDK session ID as the allocation identifier
@@ -63,7 +63,7 @@ mfxStatus Initialize(mfxIMPL impl, mfxVersion ver, MFXVideoSession* pSession, mf
 
         // Create DirectX device context
         mfxHDL deviceHandle;
-        sts = DX9_CreateHWDevice(*pSession, &deviceHandle, NULL, bCreateSharedHandles);
+        //s = DX9_CreateHWDevice(*pSession, &deviceHandle, NULL, bCreateSharedHandles);
         MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 
         // Provide device manager to Media SDK
@@ -71,11 +71,13 @@ mfxStatus Initialize(mfxIMPL impl, mfxVersion ver, MFXVideoSession* pSession, mf
         MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 
         pmfxAllocator->pthis  = *pSession; // We use Media SDK session ID as the allocation identifier
-        pmfxAllocator->Alloc  = dx9_simple_alloc;
+		/*
+		pmfxAllocator->Alloc  = dx9_simple_alloc;
         pmfxAllocator->Free   = dx9_simple_free;
         pmfxAllocator->Lock   = dx9_simple_lock;
         pmfxAllocator->Unlock = dx9_simple_unlock;
         pmfxAllocator->GetHDL = dx9_simple_gethdl;
+		*/
 
         // Since we are using video memory we must provide Media SDK with an external allocator
         sts = pSession->SetFrameAllocator(pmfxAllocator);
@@ -92,8 +94,8 @@ mfxStatus Initialize(mfxIMPL impl, mfxVersion ver, MFXVideoSession* pSession, mf
 void Release()
 {
 #if defined(DX9_D3D) || defined(DX11_D3D)
-//    CleanupHWDevice();
-    DX9_CleanupHWDevice();
+    //eanupHWDevice();
+    //9_CleanupHWDevice();
 #endif
 }
 

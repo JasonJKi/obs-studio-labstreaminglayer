@@ -53,7 +53,6 @@ include_directories(SYSTEM ${ZLIB_INCLUDE_DIR})
 add_definitions(-DLIBOBS_EXPORTS)
 
 include_directories(${OBS_JANSSON_INCLUDE_DIRS})
-include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/liblsl/bin")
 
 if(WIN32)
 	set(libobs_PLATFORM_SOURCES
@@ -76,11 +75,12 @@ if(WIN32)
 	set(libobs_audio_monitoring_HEADERS
 		audio-monitoring/win32/wasapi-output.h
 		)
-	set(libobs_PLATFORM_DEPS winmm)
+	set(libobs_PLATFORM_DEPS winmm )
 	if(MSVC)
 		set(libobs_PLATFORM_DEPS
 		${libobs_PLATFORM_DEPS}
-		w32-pthreads)
+		w32-pthreads
+		${CMAKE_SOURCE_DIR}/dependencies/win64/bin/liblsl64.lib)
 	endif()
 elseif(APPLE)
 	set(libobs_PLATFORM_SOURCES
@@ -423,7 +423,7 @@ target_include_directories(libobs
 		"$<INSTALL_INTERFACE:${OBS_INCLUDE_DESTINATION}>")
 target_link_libraries(libobs
 	PRIVATE
-		lsl64
+		${liblsl}
 		${libobs_PLATFORM_DEPS}
 		${libobs_image_loading_LIBRARIES}
 		${OBS_JANSSON_IMPORT}

@@ -20,7 +20,7 @@ Copyright(c) 2011-2015 Intel Corporation. All Rights Reserved.
 #include "device_directx9.h"
 // #include "igfx_s3dcontrol.h"
 
-#include "atlbase.h"
+//iclude "atlbase.h"
 
 // Macros
 #define MSDK_ZERO_MEMORY(VAR)                    {memset(&VAR, 0, sizeof(VAR));}

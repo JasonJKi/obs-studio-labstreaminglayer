@@ -33,7 +33,7 @@
 #include "media-io/audio-resampler.h"
 #include "media-io/video-io.h"
 #include "media-io/audio-io.h"
-#include "liblsl\lsl_c.h"
+#include "liblsl/lsl_c.h"
 
 
 #include "obs.h"
@@ -58,7 +58,6 @@ struct obs_lsl {
 	char *type;
 	int channel_count;
 	double nominal_srate;
-	lsl_channel_format_t channel_format;
 	char *source_id;
 
 } ;

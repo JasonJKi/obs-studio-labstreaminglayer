@@ -1633,7 +1633,7 @@ static inline void obs_source_draw_texture(struct obs_source *source,
 		if (media_rendered) {
 			sample[0] = *obs->media_frametime;
 			sample[1] = *obs->media_frame_number;
-			send_lsl_frame_marker(&obs->obs_lsl_global->outlet, sample);
+			send_lsl_trigger(&obs->obs_lsl_global->outlet, sample);
 		}
 	}
 	*/

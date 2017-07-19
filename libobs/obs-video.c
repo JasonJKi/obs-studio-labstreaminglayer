@@ -75,7 +75,7 @@ static inline void render_displays(void)
 			if (media_rendered) {
 				sample[0] = *obs->media_frametime;
 				sample[1] = *obs->media_frame_number;
-				send_lsl_frame_marker(&obs->obs_lsl_global->outlet, sample);
+				send_lsl_trigger(&obs->obs_lsl_global->outlet, sample);
 			}
 		}
 		display = display->next;
@@ -627,11 +627,9 @@ void *obs_video_thread(void *param)
 		render_displays();
 		profile_end(render_displays_name);
 	
-		
 		profile_start(output_frame_name);
 		output_frame();
 		profile_end(output_frame_name);
-		
 
 		frame_time_ns = os_gettime_ns() - frame_start;
 

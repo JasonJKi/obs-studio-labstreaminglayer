@@ -112,7 +112,6 @@ if(NOT INSTALLER_RUN)
 		add_subdirectory(libobs-d3d11)
 	endif()
 
-	add_subdirectory(liblsl)
 	add_subdirectory(libobs-opengl)
 	add_subdirectory(libobs)
 	add_subdirectory(UI)

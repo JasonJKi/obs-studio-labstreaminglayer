@@ -101,7 +101,7 @@ bool obs_lsl_destroy(obs_lsl_t* lslOutput) {
 	return true;
 }
 
-void send_lsl_frame_marker(obs_lsl_t *obs_lsl,double sample[])
+void send_lsl_trigger(obs_lsl_t *obs_lsl,double sample[])
 {
 	lsl_push_sample_d(obs_lsl->outlet, sample);
 }

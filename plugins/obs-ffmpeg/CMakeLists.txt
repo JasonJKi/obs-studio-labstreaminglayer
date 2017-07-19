@@ -2,7 +2,8 @@ project(obs-ffmpeg)
 
 if(MSVC)
 	set(obs-ffmpeg_PLATFORM_DEPS
-		w32-pthreads)
+		w32-pthreads
+		${CMAKE_SOURCE_DIR}/dependencies/win64/bin/liblsl64.lib)
 endif()
 
 

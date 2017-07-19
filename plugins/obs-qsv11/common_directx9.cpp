@@ -5,7 +5,7 @@
 #include <initguid.h>
 #include <d3d9.h>
 #include <map>
-#include <atlbase.h>
+//#include <atlbase.h>
 
 
 #define D3DFMT_NV12 (D3DFORMAT)MAKEFOURCC('N','V','1','2')
@@ -17,9 +17,9 @@ std::map<mfxMemId*, mfxHDL>             dx9_allocResponses;
 std::map<mfxHDL, mfxFrameAllocResponse> dx9_allocDecodeResponses;
 std::map<mfxHDL, int>                   dx9_allocDecodeRefCount;
 
-CComPtr<IDirect3DDeviceManager9> m_manager;
-CComPtr<IDirectXVideoDecoderService> m_decoderService;
-CComPtr<IDirectXVideoProcessorService> m_processorService;
+//CComPtr<IDirect3DDeviceManager9> m_manager;
+//CComPtr<IDirectXVideoDecoderService> m_decoderService;
+//CComPtr<IDirectXVideoProcessorService> m_processorService;
 HANDLE m_hDecoder;
 HANDLE m_hProcessor;
 DWORD m_surfaceUsage;

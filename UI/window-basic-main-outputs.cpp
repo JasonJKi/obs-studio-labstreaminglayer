@@ -8,7 +8,6 @@
 #include "obs-ffmpeg-compat.h"
 #include <iostream>
 #include <future>
-#include <lsl_cpp.h>
 
 using namespace std;
 
