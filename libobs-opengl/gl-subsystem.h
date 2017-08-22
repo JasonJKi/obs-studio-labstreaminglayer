@@ -414,6 +414,7 @@ struct gs_texture {
 struct gs_texture_2d {
 	struct gs_texture    base;
 
+	uint64_t			 tick_time;
 	uint32_t             width;
 	uint32_t             height;
 	bool                 gen_mipmaps;

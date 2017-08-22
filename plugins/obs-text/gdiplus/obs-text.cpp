@@ -1003,7 +1003,7 @@ bool obs_module_load(void)
 	{
 		reinterpret_cast<TextSource*>(data)->Update(settings);
 	};
-	si.video_tick = [] (void *data, float seconds)
+	si.video_tick = [](void *data, float seconds, uint64_t tick_time)
 	{
 		reinterpret_cast<TextSource*>(data)->Tick(seconds);
 	};

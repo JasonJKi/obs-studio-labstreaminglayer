@@ -237,7 +237,6 @@ struct gs_rect {
 };
 
 /* wrapped opaque data types */
-
 struct gs_texture;
 struct gs_stage_surface;
 struct gs_zstencil_buffer;
@@ -254,7 +253,6 @@ struct gs_effect_pass;
 struct gs_effect_param;
 struct gs_device;
 struct graphics_subsystem;
-
 typedef struct gs_texture          gs_texture_t;
 typedef struct gs_stage_surface    gs_stagesurf_t;
 typedef struct gs_zstencil_buffer  gs_zstencil_t;
@@ -270,6 +268,7 @@ typedef struct gs_effect_technique gs_technique_t;
 typedef struct gs_effect_param     gs_eparam_t;
 typedef struct gs_device           gs_device_t;
 typedef struct graphics_subsystem  graphics_t;
+
 
 /* ---------------------------------------------------
  * shader functions

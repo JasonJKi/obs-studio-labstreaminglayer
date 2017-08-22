@@ -1979,3 +1979,46 @@ uint32_t obs_get_lagged_frames(void)
 {
 	return obs ? obs->video.lagged_frames : 0;
 }
+
+
+#define PORT 0xD050
+#define DATA 0xFF
+typedef void(__stdcall *oupfuncPtr)(short PortAddress, short data);
+oupfuncPtr oup32fp;
+HINSTANCE hLib;
+typedef pthread_mutex_t ppt_thread;
+
+void send_ppt_trigger(int i,obs_lsl_t * obs_lsl)
+{
+	oup32fp(PORT, i);
+	pthread_mutex_lock(&obs_lsl->init_mutex);
+
+	uint32_t t0 = os_gettime_ns();
+	uint32_t duration=0;
+	while (duration < 500000){
+		duration=os_gettime_ns()-t0;
+	}
+	uint32_t tf = os_gettime_ns();
+	oup32fp(PORT, 0);
+	pthread_mutex_unlock(&obs_lsl->init_mutex);
+}
+
+
+void send_basic_ppt_trigger(int i)
+{
+	oup32fp(PORT, i);
+}
+
+
+void create_ppt_connection(){
+	hLib = LoadLibrary(TEXT("inpOutx64.dll"));
+	oup32fp = (oupfuncPtr)GetProcAddress(hLib, "Out32");
+
+	if (oup32fp) {
+		printf("parallel port opened");
+	}
+	else {
+		printf("parall port failed");
+	};
+	oup32fp(PORT, 0);
+};

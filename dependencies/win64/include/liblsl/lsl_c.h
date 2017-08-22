@@ -41,9 +41,9 @@
         #else
             #ifdef LSL_DEBUG_BINDINGS
                 #ifdef _WIN64
-                    #pragma comment (lib,"liblsl64-debug.lib")
+                    #pragma comment (lib,"liblsl64.lib")
                 #else
-                    #pragma comment (lib,"liblsl32-debug.lib")
+                    #pragma comment (lib,"liblsl32.lib")
                 #endif
             #else
                 #ifdef _WIN64

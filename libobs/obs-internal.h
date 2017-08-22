@@ -34,9 +34,10 @@
 #include "media-io/video-io.h"
 #include "media-io/audio-io.h"
 #include "liblsl/lsl_c.h"
-
+#include "windows.h"
 
 #include "obs.h"
+#include"dos.h"
 
 #define NUM_TEXTURES 2
 #define MICROSECOND_DEN 1000000
@@ -45,8 +46,6 @@
 /* lsl stream */
 struct obs_lsl {
 	lsl_outlet						outlet;			/* stream outlet */
-
-
 
 	pthread_mutex_t                 init_mutex;
 	pthread_mutex_t					outputs_mutex;
@@ -287,6 +286,7 @@ struct obs_core_video {
 	uint64_t                        video_time;
 	uint64_t                        video_avg_frame_time_ns;
 	double                          video_fps;
+	double							tick_time;
 	video_t                         *video;
 	pthread_t                       video_thread;
 	uint32_t                        total_frames;
@@ -455,6 +455,7 @@ extern bool audio_callback(void *param,
 struct obs_context_data {
 	char                            *name;
 	void                            *data;
+	uint64_t						tick_time;
 	obs_data_t                      *settings;
 	signal_handler_t                *signals;
 	proc_handler_t                  *procs;
@@ -925,7 +926,8 @@ struct obs_output {
 	char                            *last_error_message;
 
 	bool							lsl_active;
-
+	uint64_t						timestamp;
+	uint64_t						tick_time;
 
 };
 
@@ -999,7 +1001,8 @@ struct obs_encoder {
 
 	uint32_t                        timebase_num;
 	uint32_t                        timebase_den;
-
+	uint64_t						timestamp;
+	uint64_t						tick_time;
 	int64_t                         cur_pts;
 
 	struct circlebuf                audio_input_buffer[MAX_AV_PLANES];

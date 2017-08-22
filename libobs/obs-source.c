@@ -1031,9 +1031,9 @@ void obs_source_video_tick(obs_source_t *source, float seconds)
 		source->active = now_active;
 	}
 
-	if (source->context.data && source->info.video_tick)
-		source->info.video_tick(source->context.data, seconds);
-
+	if (source->context.data && source->info.video_tick){
+		source->info.video_tick(source->context.data, seconds, os_gettime_ns());
+	}
 	source->async_rendered = false;
 	source->deinterlace_rendered = false;
 }
@@ -1626,17 +1626,6 @@ static inline void obs_source_draw_texture(struct obs_source *source,
 
 	gs_draw_sprite(tex, source->async_flip ? GS_FLIP_V : 0, 0, 0);
 
-	/*
-	if (obs->obs_lsl_active) {
-		double sample[2];
-		bool media_rendered = obs->media_rendered_for_display;
-		if (media_rendered) {
-			sample[0] = *obs->media_frametime;
-			sample[1] = *obs->media_frame_number;
-			send_lsl_trigger(&obs->obs_lsl_global->outlet, sample);
-		}
-	}
-	*/
 }
 
 static void obs_source_draw_async_texture(struct obs_source *source)
@@ -1668,8 +1657,10 @@ static void obs_source_draw_async_texture(struct obs_source *source)
 
 static void obs_source_update_async_video(obs_source_t *source)
 {
+
+	struct obs_source_frame *frame = obs_source_get_frame(source);
+
 	if (!source->async_rendered) {
-		struct obs_source_frame *frame = obs_source_get_frame(source);
 
 		if (frame)
 			frame = filter_async_video(source, frame);

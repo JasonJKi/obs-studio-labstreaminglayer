@@ -47,6 +47,8 @@ struct encoder_packet {
 
 	int32_t               timebase_num; /**< Timebase numerator */
 	int32_t               timebase_den; /**< Timebase denominator */
+	uint64_t		      timestamp;
+	uint64_t			  tick_time;
 
 	enum obs_encoder_type type;         /**< Encoder type */
 
@@ -97,6 +99,9 @@ struct encoder_frame {
 
 	/** Presentation timestamp */
 	int64_t               pts;
+
+	uint64_t			  timestamp;
+	uint64_t			  tick_time;
 };
 
 /**

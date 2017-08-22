@@ -767,6 +767,8 @@ static inline void send_packet(struct obs_encoder *encoder,
 		send_first_video_packet(encoder, cb, packet);
 	else
 		cb->new_packet(cb->param, packet);
+
+
 }
 
 static void full_stop(struct obs_encoder *encoder)
@@ -795,9 +797,15 @@ static inline void do_encode(struct obs_encoder *encoder,
 
 	pkt.timebase_num = encoder->timebase_num;
 	pkt.timebase_den = encoder->timebase_den;
+	pkt.tick_time = frame->tick_time;
+	pkt.timestamp = frame->timestamp;
+	encoder->tick_time = frame->tick_time;
+	encoder->timestamp = frame->timestamp;
+
 	pkt.encoder = encoder;
 
 	profile_start(encoder->profile_encoder_encode_name);
+
 	success = encoder->info.encode(encoder->context.data, frame, &pkt,
 			&received);
 	profile_end(encoder->profile_encoder_encode_name);
@@ -820,12 +828,15 @@ static inline void do_encode(struct obs_encoder *encoder,
 			packet_dts_usec(&pkt) - encoder->offset_usec;
 
 		pkt.sys_dts_usec = pkt.dts_usec;
-
+		pkt.timestamp = encoder->start_ts;
 		pthread_mutex_lock(&encoder->callbacks_mutex);
 
 		for (size_t i = encoder->callbacks.num; i > 0; i--) {
 			struct encoder_callback *cb;
 			cb = encoder->callbacks.array+(i-1);
+			pkt.tick_time = encoder->tick_time;
+			pkt.timestamp = encoder->timestamp;
+
 			send_packet(encoder, cb, &pkt);
 		}
 
@@ -864,17 +875,8 @@ static void receive_video(void *param, struct video_data *frame)
 
 	enc_frame.frames = 1;
 	enc_frame.pts    = encoder->cur_pts;
-	
-	if (encoder->lsl_active)
-	{
-		pthread_mutex_lock(&encoder->obs_lsl->outputs_mutex);
-		double sample[2];
-		sample[0] = (double)enc_frame.pts;
-		sample[1] = (double)frame->timestamp;
-		send_lsl_trigger(encoder->obs_lsl, sample);
-		pthread_mutex_unlock(&encoder->obs_lsl->outputs_mutex);
-	}
-
+	enc_frame.tick_time = frame->tick_time;
+	enc_frame.timestamp = frame->timestamp;
 	do_encode(encoder, &enc_frame);
 
 	blog(LOG_INFO, "frame time '%f'...", frame->timestamp);

@@ -67,6 +67,7 @@ struct video_output {
 	uint64_t                   frame_time;
 	uint32_t                   skipped_frames;
 	uint32_t                   total_frames;
+	uint64_t					   tick_time;
 
 	bool                       initialized;
 
@@ -133,7 +134,6 @@ static inline bool video_output_cur_frame(struct video_output *video)
 	for (size_t i = 0; i < video->inputs.num; i++) {
 		struct video_input *input = video->inputs.array+i;
 		struct video_data frame = frame_info->frame;
-
 		if (scale_video_output(input, &frame))
 			input->callback(input->param, &frame);
 	}
@@ -419,7 +419,7 @@ const struct video_output_info *video_output_get_info(const video_t *video)
 }
 
 bool video_output_lock_frame(video_t *video, struct video_frame *frame,
-		int count, uint64_t timestamp)
+	int count, uint64_t timestamp, uint64_t tick_time)
 {
 	struct cached_frame_info *cfi;
 	bool locked;
@@ -443,6 +443,7 @@ bool video_output_lock_frame(video_t *video, struct video_frame *frame,
 		cfi->frame.timestamp = timestamp;
 		cfi->count = count;
 		cfi->skipped = 0;
+		cfi->frame.tick_time = tick_time;
 
 		memcpy(frame, &cfi->frame, sizeof(*frame));
 

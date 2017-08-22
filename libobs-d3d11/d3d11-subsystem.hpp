@@ -306,6 +306,8 @@ struct gs_texture : gs_obj {
 	gs_texture_type type;
 	uint32_t        levels;
 	gs_color_format format;
+	uint64_t        tick_time;
+	uint64_t        media_frame_number;
 
 	ComPtr<ID3D11ShaderResourceView> shaderRes;
 	D3D11_SHADER_RESOURCE_VIEW_DESC resourceDesc = {};

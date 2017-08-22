@@ -150,6 +150,15 @@ uint32_t gs_texture_get_width(const gs_texture_t *tex)
 	return tex2d->width;
 }
 
+uint32_t gs_texture_get_tick_time(const gs_texture_t *tex)
+{
+	const struct gs_texture_2d *tex2d = (const struct gs_texture_2d*)tex;
+	if (!is_texture_2d(tex, "gs_texture_get_width"))
+		return 0;
+
+	return tex2d->tick_time;
+}
+
 uint32_t gs_texture_get_height(const gs_texture_t *tex)
 {
 	const struct gs_texture_2d *tex2d = (const struct gs_texture_2d*)tex;

@@ -241,7 +241,7 @@ struct obs_source_info {
 	 * @param  data     Source data
 	 * @param  seconds  Seconds elapsed since the last frame
 	 */
-	void (*video_tick)(void *data, float seconds);
+	void(*video_tick)(void *data, float seconds, uint64_t tick_time);
 
 	/**
 	 * Called when rendering the source with the graphics subsystem.

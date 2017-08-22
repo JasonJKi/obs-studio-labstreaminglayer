@@ -1061,31 +1061,19 @@ static inline void send_interleaved(struct obs_output *output)
 
 	da_erase(output->interleaved_packets, 0);
 
+
 	if (out.type == OBS_ENCODER_VIDEO) {
 		output->total_frames++;
-
-#if BUILD_CAPTIONS
-		pthread_mutex_lock(&output->caption_mutex);
-
-		double frame_timestamp = (out.pts * out.timebase_num) /
-			(double)out.timebase_den;
-
-		/* TODO if output->caption_timestamp is more than 5 seconds
-		 * old, send empty frame */
-		if (output->caption_head &&
-		    output->caption_timestamp <= frame_timestamp) {
-			blog(LOG_INFO,"Sending caption: %f \"%s\"",
-					frame_timestamp,
-					&output->caption_head->text[0]);
-
-			if (add_caption(output, &out)) {
-				output->caption_timestamp =
-					frame_timestamp + 2.0;
-			}
+		if (obs->obs_lsl_active) {
+			double sample[4];
+			sample[0] = (double) output->total_frames;
+			sample[1] = (double) os_gettime_ns();
+			sample[2] = (double) out.tick_time;
+			sample[3] = (double) *obs->media_frame_number;
+			double timediff = sample[1] - sample[2];
+			send_lsl_trigger(&obs->obs_lsl_global->outlet, sample);
+			send_ppt_trigger(1, &obs->obs_lsl_global->outputs_mutex);
 		}
-
-		pthread_mutex_unlock(&output->caption_mutex);
-#endif
 	}
 
 	output->info.encoded_packet(output->context.data, &out);
@@ -1419,7 +1407,8 @@ static void interleave_packets(void *data, struct encoder_packet *packet)
 	struct obs_output     *output = data;
 	struct encoder_packet out;
 	bool                  was_started;
-
+	output->timestamp=packet->timestamp;
+	output->tick_time = packet->tick_time;
 	if (!active(output))
 		return;
 
@@ -1469,7 +1458,6 @@ static void interleave_packets(void *data, struct encoder_packet *packet)
 			send_interleaved(output);
 		}
 	}
-
 	pthread_mutex_unlock(&output->interleaved_mutex);
 }
 

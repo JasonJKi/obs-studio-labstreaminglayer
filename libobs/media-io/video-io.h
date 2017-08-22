@@ -68,6 +68,7 @@ struct video_data {
 	uint8_t           *data[MAX_AV_PLANES];
 	uint32_t          linesize[MAX_AV_PLANES];
 	uint64_t          timestamp;
+	uint64_t		  tick_time;
 };
 
 struct video_output_info {
@@ -79,7 +80,7 @@ struct video_output_info {
 	uint32_t          width;
 	uint32_t          height;
 	size_t            cache_size;
-
+	double			  *tick_time;
 	enum video_colorspace colorspace;
 	enum video_range_type range;
 };
@@ -166,7 +167,7 @@ EXPORT bool video_output_active(const video_t *video);
 EXPORT const struct video_output_info *video_output_get_info(
 		const video_t *video);
 EXPORT bool video_output_lock_frame(video_t *video, struct video_frame *frame,
-		int count, uint64_t timestamp);
+		int count, uint64_t timestamp, uint64_t tick_time);
 EXPORT void video_output_unlock_frame(video_t *video);
 EXPORT uint64_t video_output_get_frame_time(const video_t *video);
 EXPORT void video_output_stop(video_t *video);

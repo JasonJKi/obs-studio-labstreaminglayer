@@ -15,7 +15,7 @@ struct dc_capture {
 	uint32_t     width;
 	uint32_t     height;
 	int          num_textures;
-
+	uint64_t	 tick_time;
 	bool         compatibility;
 	HDC          hdc;
 	HBITMAP      bmp, old_bmp;

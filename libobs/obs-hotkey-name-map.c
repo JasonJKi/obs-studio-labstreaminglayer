@@ -134,7 +134,7 @@ static void shrink_prefix(obs_hotkey_name_map_edge_t *e, size_t l)
 		bfree(str);
 }
 
-static void connect(obs_hotkey_name_map_edge_t *e,
+static void connect_key(obs_hotkey_name_map_edge_t *e,
 		obs_hotkey_name_map_node_t *n)
 {
 	e->node = n;
@@ -155,12 +155,12 @@ static void reduce_edge(obs_hotkey_name_map_edge_t *e, const char *key,
 	obs_hotkey_name_map_edge_t *tail =
 		da_push_back_new(new_node_->children);
 
-	connect(tail, e->node);
+	connect_key(tail, e->node);
 	set_prefix(tail, str, e->prefix_len - common_length);
 
 	add_leaf(new_node_, str_, l - common_length, v);
 
-	connect(e, new_node_);
+	connect_key(e, new_node_);
 	shrink_prefix(e, common_length);
 }
 
@@ -196,11 +196,11 @@ static void insert(obs_hotkey_name_map_edge_t *edge,
 {
 	if (node->is_leaf && l > 0) {
 		obs_hotkey_name_map_node_t *new_node_ = new_node();
-		connect(edge, new_node_);
+		connect_key(edge, new_node_);
 
 		obs_hotkey_name_map_edge_t *edge =
 			da_push_back_new(new_node_->children);
-		connect(edge, node);
+		connect_key(edge, node);
 		add_leaf(new_node_, key, l, v);
 		return;
 	}

@@ -55,7 +55,7 @@ struct gs_effect_param {
 	bool changed;
 	DARRAY(uint8_t) cur_val;
 	DARRAY(uint8_t) default_val;
-
+	uint64_t        tick_time;
 	gs_effect_t *effect;
 	gs_samplerstate_t *next_sampler;
 

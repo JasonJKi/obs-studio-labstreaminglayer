@@ -182,9 +182,8 @@ static void draw_texture(struct dc_capture *capture, int id,
 	gs_technique_t *tech    = gs_effect_get_technique(effect, "Draw");
 	gs_eparam_t    *image   = gs_effect_get_param_by_name(effect, "image");
 	size_t      passes;
-
 	gs_effect_set_texture(image, texture);
-
+	
 	passes = gs_technique_begin(tech);
 	for (size_t i = 0; i < passes; i++) {
 		if (gs_technique_begin_pass(tech, i)) {
@@ -207,6 +206,7 @@ void dc_capture_render(struct dc_capture *capture, gs_effect_t *effect)
 	if (!capture->valid)
 		return;
 
-	if (capture->textures_written[last_tex]);
+	if (capture->textures_written[last_tex]); {
 		draw_texture(capture, last_tex, effect);
+	}
 }

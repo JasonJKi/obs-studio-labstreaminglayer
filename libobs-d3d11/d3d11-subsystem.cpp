@@ -1762,6 +1762,14 @@ uint32_t gs_texture_get_height(const gs_texture_t *tex)
 	return static_cast<const gs_texture_2d*>(tex)->height;
 }
 
+uint32_t gs_texture_get_tick_time(const gs_texture_t *tex)
+{
+	if (tex->type != GS_TEXTURE_2D)
+		return 0;
+
+	return static_cast<const gs_texture_2d*>(tex)->tick_time;
+}
+
 enum gs_color_format gs_texture_get_color_format(const gs_texture_t *tex)
 {
 	if (tex->type != GS_TEXTURE_2D)

@@ -974,7 +974,8 @@ struct AdvancedOutput : BasicOutputHandler {
 	OBSEncoder             aacTrack[MAX_AUDIO_MIXES];
 	OBSEncoder             h264Streaming;
 	OBSEncoder             h264Recording;
-	obs_lsl				   *lsl;
+	OBSLSL				   lslStream;
+	bool				   lslConfigured = false;
 
 	bool                   ffmpegOutput;
 	bool                   ffmpegRecording;
@@ -1001,6 +1002,8 @@ struct AdvancedOutput : BasicOutputHandler {
 	virtual void StopStreaming(bool force) override;
 	virtual void StopRecording(bool force) override;
 	virtual void StopLSL() override;
+
+	bool ConfigureLSL();
 
 	virtual bool StreamingActive() const override;
 	virtual bool RecordingActive() const override;
@@ -1505,8 +1508,17 @@ bool AdvancedOutput::StartRecording()
 
 bool AdvancedOutput::StartLSL()
 {
-	return true;
+	if (!ConfigureLSL())
+		return false;
+	return 	lslBtnActive = true;
 }
+
+bool AdvancedOutput::ConfigureLSL(){
+	lslStream = obs_lsl_create();
+	lslConfigured = true;
+	return lslConfigured;
+}
+
 
 void AdvancedOutput::StopStreaming(bool force)
 {
@@ -1526,6 +1538,8 @@ void AdvancedOutput::StopRecording(bool force)
 
 void AdvancedOutput::StopLSL()
 {
+	lslConfigured = obs_lsl_destroy(lslStream);
+	lslBtnActive = false;
 }
 
 
@@ -1541,7 +1555,7 @@ bool AdvancedOutput::RecordingActive() const
 
 bool AdvancedOutput::LSLActive() const
 {
-	return false;
+	return lslBtnActive;
 }
 
 /* ------------------------------------------------------------------------ */

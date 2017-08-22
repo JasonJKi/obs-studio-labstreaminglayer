@@ -17,31 +17,30 @@
 
 #include <string.h>
 #include <assert.h>
-#include <conio.h>
-
 #include <util/bmem.h>
 #include <util/c99defs.h>
 #include <util/darray.h>
 
+#define PORT 0xD050
+#define DATA 0x03f8
 #include "obs-internal.h"
+
 obs_lsl_t *obs_lsl_create() {
 	struct obs_lsl *obs_lsl;
 	obs_lsl = bzalloc(sizeof(struct obs_lsl));
 	bool success;
-	int  c = 2;
-	init_lsl(obs_lsl);
-	pthread_mutex_lock(&obs_lsl->init_mutex);
+	int  c = 4;
 	success = obs_lsl_initialize_internal(obs_lsl,c);
 	obs->obs_lsl_global = obs_lsl;
 	obs->obs_lsl_active = true;
-	pthread_mutex_unlock(&obs_lsl->init_mutex);
+	init_lsl(obs_lsl);
+	create_ppt_connection();
 
 	if (success)
 		obs_lsl->initialized = true;
 		blog(LOG_DEBUG, "lsl '%s' (%s) created", "OBS", "Markers");
 	return obs_lsl;
 }
-
 
 static inline bool obs_lsl_initialize_internal(obs_lsl_t *labStream,int chan)
 {
@@ -51,9 +50,9 @@ static inline bool obs_lsl_initialize_internal(obs_lsl_t *labStream,int chan)
 	double starttime;			/* used for send timing */
 
 
-	info = lsl_create_streaminfo("OBS Studio", "Markers", chan, 1, cft_double64, "325wqer4354");
-	char *channel_label[] = { "frame time","frame number" };
-	char *channel_units[] = { "seconds" , "sample" };
+	info = lsl_create_streaminfo("OBS Studio", "Markers", chan, 1, cft_double64, "abcdefg");
+	char *channel_label[] = { "frame number", "frame time1", "frame time2", "frame time2" };
+	char *channel_units[] = { "sample", "seconds", "seconds", "seconds"};
 	desc = lsl_get_desc(info);
 	lsl_append_child_value(desc, "manufacturer", "obs");
 	chns = lsl_append_child(desc, "channels");
@@ -82,7 +81,6 @@ bool *init_lsl(struct obs_lsl *labStream)
 		return false;
 	if (pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE) != 0)
 		return false;
-		return false;
 	if (pthread_mutex_init(&labStream->init_mutex, &attr) != 0)
 		return false;
 	if (pthread_mutex_init(&labStream->callbacks_mutex, &attr) != 0)
@@ -92,7 +90,6 @@ bool *init_lsl(struct obs_lsl *labStream)
 
 	return true;
 }
-
 
 bool obs_lsl_destroy(obs_lsl_t* lslOutput) {
 	lsl_destroy_outlet(lslOutput->outlet);
@@ -105,3 +102,4 @@ void send_lsl_trigger(obs_lsl_t *obs_lsl,double sample[])
 {
 	lsl_push_sample_d(obs_lsl->outlet, sample);
 }
+

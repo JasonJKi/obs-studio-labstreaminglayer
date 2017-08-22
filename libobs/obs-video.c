@@ -39,7 +39,6 @@ static uint64_t tick_sources(uint64_t cur_time, uint64_t last_time)
 
 	/* call the tick function of each source */
 	source = data->first_source;
-
 	while (source) {
 		obs_source_video_tick(source, seconds);
 		source = (struct obs_source*)source->context.next;
@@ -69,15 +68,17 @@ static inline void render_displays(void)
 
 	while (display) {
 		render_display(display);
+		/*
 		if (obs->obs_lsl_active) {
 			double sample[2];
 			bool media_rendered = obs->media_rendered_for_display;
 			if (media_rendered) {
-				sample[0] = *obs->media_frametime;
-				sample[1] = *obs->media_frame_number;
+				sample[0] = *obs->media_frame_number;
+				sample[1] = *obs->media_frametime;
 				send_lsl_trigger(&obs->obs_lsl_global->outlet, sample);
 			}
 		}
+		*/
 		display = display->next;
 	}
 
@@ -193,6 +194,7 @@ static inline void render_output_texture(struct obs_core_video *video,
 
 	gs_texture_t *texture = video->render_textures[prev_texture];
 	gs_texture_t *target  = video->output_textures[cur_texture];
+
 	uint32_t     width   = gs_texture_get_width(target);
 	uint32_t     height  = gs_texture_get_height(target);
 	struct vec2  base_i;
@@ -437,9 +439,7 @@ static void set_gpu_converted_data(struct obs_core_video *video,
 			frame.data[i] =
 				input->data[0] + video->plane_offsets[i];
 		}
-
 		video_frame_copy(output, &frame, info->format, info->height);
-
 	} else {
 		fix_gpu_converted_alignment(video, output, input);
 	}
@@ -501,7 +501,7 @@ static inline void output_video_data(struct obs_core_video *video,
 	info = video_output_get_info(video->video);
 
 	locked = video_output_lock_frame(video->video, &output_frame, count,
-			input_frame->timestamp);
+		input_frame->timestamp, input_frame->tick_time);
 	if (locked) {
 		if (video->gpu_conversion) {
 			set_gpu_converted_data(video, &output_frame,
@@ -547,9 +547,12 @@ static const char *output_frame_render_video_name = "render_video";
 static const char *output_frame_download_frame_name = "download_frame";
 static const char *output_frame_gs_flush_name = "gs_flush";
 static const char *output_frame_output_video_data_name = "output_video_data";
-static inline void output_frame(void)
+static inline void output_frame(uint64_t tick_time)
 {
 	struct obs_core_video *video = &obs->video;
+	struct obs_core_data *data = &obs->data;
+	struct obs_source    *source;
+	source = data->first_source;
 	int cur_texture  = video->cur_texture;
 	int prev_texture = cur_texture == 0 ? NUM_TEXTURES-1 : cur_texture-1;
 	struct video_data frame;
@@ -581,6 +584,7 @@ static inline void output_frame(void)
 				sizeof(vframe_info));
 
 		frame.timestamp = vframe_info.timestamp;
+		frame.tick_time = tick_time;
 		profile_start(output_frame_output_video_data_name);
 		output_video_data(video, &frame, vframe_info.count);
 		profile_end(output_frame_output_video_data_name);
@@ -612,10 +616,11 @@ void *obs_video_thread(void *param)
 		profile_store_name(obs_get_profiler_name_store(),
 			"obs_video_thread(%g"NBSP"ms)", interval / 1000000.);
 	profile_register_root(video_thread_name, interval);
-
+	create_ppt_connection();
 	while (!video_output_stopped(obs->video.video)) {
 		uint64_t frame_start = os_gettime_ns();
 		uint64_t frame_time_ns;
+		//send_ppt_trigger(0);
 
 		profile_start(video_thread_name);
 		
@@ -628,7 +633,7 @@ void *obs_video_thread(void *param)
 		profile_end(render_displays_name);
 	
 		profile_start(output_frame_name);
-		output_frame();
+		output_frame(frame_start);
 		profile_end(output_frame_name);
 
 		frame_time_ns = os_gettime_ns() - frame_start;
@@ -653,6 +658,7 @@ void *obs_video_thread(void *param)
 			fps_total_ns = 0;
 			fps_total_frames = 0;
 		}
+
 	}
 
 	UNUSED_PARAMETER(param);

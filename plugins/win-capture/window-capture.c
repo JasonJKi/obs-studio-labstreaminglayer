@@ -27,7 +27,7 @@ struct window_capture {
 
 	float                resize_timer;
 	float                cursor_check_time;
-
+	uint64_t			 tick_time;
 	HWND                 window;
 	RECT                 last_rect;
 };
@@ -137,7 +137,7 @@ static obs_properties_t *wc_properties(void *unused)
 #define RESIZE_CHECK_TIME 0.2f
 #define CURSOR_CHECK_TIME 0.2f
 
-static void wc_tick(void *data, float seconds)
+static void wc_tick(void *data, float seconds, uint64_t tick_time)
 {
 	struct window_capture *wc = data;
 	RECT rect;
@@ -163,7 +163,6 @@ static void wc_tick(void *data, float seconds)
 	} else if (IsIconic(wc->window)) {
 		return;
 	}
-
 	wc->cursor_check_time += seconds;
 	if (wc->cursor_check_time > CURSOR_CHECK_TIME) {
 		DWORD foreground_pid, target_pid;
@@ -206,8 +205,10 @@ static void wc_tick(void *data, float seconds)
 		dc_capture_init(&wc->capture, 0, 0, rect.right, rect.bottom,
 				wc->cursor, wc->compatibility);
 	}
-
+	
+	wc->capture.tick_time = tick_time;
 	dc_capture_capture(&wc->capture, wc->window);
+
 	obs_leave_graphics();
 }
 
