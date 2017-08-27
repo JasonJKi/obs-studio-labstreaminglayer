@@ -34,10 +34,10 @@
 #include "media-io/video-io.h"
 #include "media-io/audio-io.h"
 #include "liblsl/lsl_c.h"
-#include "windows.h"
 
+//#include "windows.h"
+//#include"dos.h"
 #include "obs.h"
-#include"dos.h"
 
 #define NUM_TEXTURES 2
 #define MICROSECOND_DEN 1000000

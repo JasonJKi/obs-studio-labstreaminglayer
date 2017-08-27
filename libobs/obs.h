@@ -1375,9 +1375,11 @@ EXPORT void obs_lsl_stop(obs_output_t *output);
 EXPORT obs_lsl_t *obs_lsl_create();
 EXPORT bool obs_lsl_destroy(obs_lsl_t* lslOutput);
 EXPORT void send_lsl_trigger(obs_lsl_t *obs_lsl,double sample[]);
-EXPORT void send_ppt_trigger(int sample, obs_lsl_t* obs_lsl);
-EXPORT void send_basic_ppt_trigger(int sample);
 EXPORT void obs_output_set_lsl(obs_output_t *output,obs_lsl_t *obs_lsl);
+
+
+//EXPORT void send_ppt_trigger(int sample, obs_lsl_t* obs_lsl);
+//EXPORT void send_basic_ppt_trigger(int sample);
 
 //EXPORT lsl_outlet create_lsl_stream(obs_encoder_t *encoder);
 //EXPORT lsl_outlet *lsl_stream_create();

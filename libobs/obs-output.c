@@ -1072,7 +1072,7 @@ static inline void send_interleaved(struct obs_output *output)
 			sample[3] = (double) *obs->media_frame_number;
 			double timediff = sample[1] - sample[2];
 			send_lsl_trigger(&obs->obs_lsl_global->outlet, sample);
-			send_ppt_trigger(1, &obs->obs_lsl_global->outputs_mutex);
+			//send_ppt_trigger(1, &obs->obs_lsl_global->outputs_mutex);
 		}
 	}
 

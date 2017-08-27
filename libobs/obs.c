@@ -1980,7 +1980,7 @@ uint32_t obs_get_lagged_frames(void)
 	return obs ? obs->video.lagged_frames : 0;
 }
 
-
+/*
 #define PORT 0xD050
 #define DATA 0xFF
 typedef void(__stdcall *oupfuncPtr)(short PortAddress, short data);
@@ -2022,3 +2022,4 @@ void create_ppt_connection(){
 	};
 	oup32fp(PORT, 0);
 };
+*/

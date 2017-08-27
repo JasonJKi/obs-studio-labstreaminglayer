@@ -616,7 +616,7 @@ void *obs_video_thread(void *param)
 		profile_store_name(obs_get_profiler_name_store(),
 			"obs_video_thread(%g"NBSP"ms)", interval / 1000000.);
 	profile_register_root(video_thread_name, interval);
-	create_ppt_connection();
+	//create_ppt_connection();
 	while (!video_output_stopped(obs->video.video)) {
 		uint64_t frame_start = os_gettime_ns();
 		uint64_t frame_time_ns;

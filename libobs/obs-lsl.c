@@ -34,7 +34,6 @@ obs_lsl_t *obs_lsl_create() {
 	obs->obs_lsl_global = obs_lsl;
 	obs->obs_lsl_active = true;
 	init_lsl(obs_lsl);
-	create_ppt_connection();
 
 	if (success)
 		obs_lsl->initialized = true;
