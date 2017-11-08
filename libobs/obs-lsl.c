@@ -29,11 +29,13 @@ obs_lsl_t *obs_lsl_create() {
 	struct obs_lsl *obs_lsl;
 	obs_lsl = bzalloc(sizeof(struct obs_lsl));
 	bool success;
-	int  c = 4;
-	success = obs_lsl_initialize_internal(obs_lsl,c);
+	int  c1 = 4;
+	int c2 = 2;
+	//success = obs_lsl_initialize_internal_display(obs_lsl, c2);
+
+	success = obs_lsl_initialize_internal_output(obs_lsl, c1);
 	obs->obs_lsl_global = obs_lsl;
 	obs->obs_lsl_active = true;
-	init_lsl(obs_lsl);
 
 	if (success)
 		obs_lsl->initialized = true;
@@ -41,13 +43,12 @@ obs_lsl_t *obs_lsl_create() {
 	return obs_lsl;
 }
 
-static inline bool obs_lsl_initialize_internal(obs_lsl_t *labStream,int chan)
+static inline bool obs_lsl_initialize_internal_output(obs_lsl_t *obs_lsl,int chan)
 {
 	lsl_streaminfo info;		/* out stream declaration object */
 	lsl_xml_ptr desc, chn, chns;/* some xml element pointers */
-	lsl_outlet outlet;			/* stream outlet */
+	lsl_outlet outlet1;			/* stream outlet */
 	double starttime;			/* used for send timing */
-
 
 	info = lsl_create_streaminfo("OBS Studio", "Markers", chan, 1, cft_double64, "abcdefg");
 	char *channel_label[] = { "frame number", "frame time1", "frame time2", "frame time2" };
@@ -63,8 +64,8 @@ static inline bool obs_lsl_initialize_internal(obs_lsl_t *labStream,int chan)
 	}
 
 	/* make a new outlet (chunking: default, buffering: 360 seconds) */
-	outlet = lsl_create_outlet(info, 0, 180);
-	labStream->outlet = outlet;
+	outlet1 = lsl_create_outlet(info, 0, 180);
+	obs_lsl->outlet1 = outlet1;
 	return true;
 }
 
@@ -91,14 +92,14 @@ bool *init_lsl(struct obs_lsl *labStream)
 }
 
 bool obs_lsl_destroy(obs_lsl_t* lslOutput) {
-	lsl_destroy_outlet(lslOutput->outlet);
+	lsl_destroy_outlet(lslOutput->outlet1);
+
 	lslOutput->initialized = false;
 	obs->obs_lsl_active = false;
 	return true;
 }
 
-void send_lsl_trigger(obs_lsl_t *obs_lsl,double sample[])
+void send_lsl_trigger_output(obs_lsl_t* lslOutput, double sample[])
 {
-	lsl_push_sample_d(obs_lsl->outlet, sample);
+	lsl_push_sample_d(lslOutput->outlet1, sample);
 }
-

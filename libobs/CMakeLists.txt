@@ -80,8 +80,7 @@ if(WIN32)
 		set(libobs_PLATFORM_DEPS
 		${libobs_PLATFORM_DEPS}
 		w32-pthreads
-		${CMAKE_SOURCE_DIR}/dependencies/win64/bin/liblsl64.lib
-		${CMAKE_SOURCE_DIR}/dependencies/win64/bin/inpoutx64.lib)
+		${CMAKE_SOURCE_DIR}/dependencies/win64/bin/liblsl64.lib)
 	endif()
 elseif(APPLE)
 	set(libobs_PLATFORM_SOURCES

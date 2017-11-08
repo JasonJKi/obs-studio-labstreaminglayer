@@ -65,20 +65,21 @@ static inline void render_displays(void)
 	pthread_mutex_lock(&obs->data.displays_mutex);
 
 	display = obs->data.first_display;
+	obs->media_frame_number = -1;
 
 	while (display) {
 		render_display(display);
-		/*
+		
 		if (obs->obs_lsl_active) {
 			double sample[2];
 			bool media_rendered = obs->media_rendered_for_display;
 			if (media_rendered) {
-				sample[0] = *obs->media_frame_number;
+				sample[0] = obs->media_frame_number;
 				sample[1] = *obs->media_frametime;
-				send_lsl_trigger(&obs->obs_lsl_global->outlet, sample);
+				send_lsl_trigger_output(&obs->obs_lsl_global->outlet1, sample);
 			}
 		}
-		*/
+		
 		display = display->next;
 	}
 

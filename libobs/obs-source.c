@@ -1677,7 +1677,7 @@ static void obs_source_update_async_video(obs_source_t *source)
 						source->async_texture,
 						source->async_texrender);
 				obs->media_frametime = &frame->media_frametime;
-				obs->media_frame_number = &frame->media_framenumber;
+				obs->media_frame_number = frame->media_framenumber;
 				obs->media_rendered_for_display = true;
 			}
 			obs_source_release_frame(source, frame);

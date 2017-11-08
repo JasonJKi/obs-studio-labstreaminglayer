@@ -45,7 +45,9 @@
 /* ------------------------------------------------------------------------- */
 /* lsl stream */
 struct obs_lsl {
-	lsl_outlet						outlet;			/* stream outlet */
+	lsl_outlet						outlet1;			/* stream outlet */
+
+	lsl_outlet						outlet2;			/* stream outlet */
 
 	pthread_mutex_t                 init_mutex;
 	pthread_mutex_t					outputs_mutex;
@@ -63,7 +65,9 @@ struct obs_lsl {
 
 extern bool *init_lsl(struct obs_lsl *labStream);
 
-extern bool obs_lsl_initialize_internal(obs_lsl_t* lslOutput,int channels);
+extern bool obs_lsl_initialize_internal_output(obs_lsl_t* lslOutput,int channels);
+extern bool obs_lsl_initialize_internal_display(obs_lsl_t* lslOutput,int channels);
+
 extern void obs_lsl_shutdown(obs_lsl_t* lslOutput);
 extern void obs_lsl_stop(obs_lsl_t *lslOutput,
 	void(*new_packet)(void *param, struct encoder_packet *packet),
@@ -433,7 +437,7 @@ struct obs_core {
 	obs_lsl_t						*obs_lsl_global;
 	bool							*obs_lsl_active;
 	double							*media_frametime;
-	double							*media_frame_number;
+	double							media_frame_number;
 	bool							*media_rendered_for_display;
 
 };

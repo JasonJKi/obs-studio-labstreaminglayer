@@ -879,9 +879,7 @@ static void receive_video(void *param, struct video_data *frame)
 	enc_frame.timestamp = frame->timestamp;
 	do_encode(encoder, &enc_frame);
 
-	blog(LOG_INFO, "frame time '%f'...", frame->timestamp);
 	encoder->cur_pts += encoder->timebase_num;
-	blog(LOG_INFO, "frame number '%f'...", encoder->cur_pts);
 
 wait_for_audio:
 	profile_end(receive_video_name);

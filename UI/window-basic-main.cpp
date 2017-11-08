@@ -2582,7 +2582,7 @@ void OBSBasic::RenderMain(void *data, uint32_t cx, uint32_t cy)
 	gs_set_viewport(window->previewX, window->previewY,
 			window->previewCX, window->previewCY);
 
-	//window->DrawBackdrop(float(ovi.base_width), float(ovi.base_height));
+	window->DrawBackdrop(float(ovi.base_width), float(ovi.base_height));
 
 	if (window->IsPreviewProgramMode()) {
 		OBSScene scene = window->GetCurrentScene();
@@ -2605,7 +2605,7 @@ void OBSBasic::RenderMain(void *data, uint32_t cx, uint32_t cy)
 	         -100.0f, 100.0f);
 	gs_reset_viewport();
 
-	//window->ui->preview->DrawSceneEditing();
+	window->ui->preview->DrawSceneEditing();
 
 	/* --------------------------------------- */
 

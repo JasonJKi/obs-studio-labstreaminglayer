@@ -1,9 +1,6 @@
-set (liblsl_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
-set (liblsl_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
-set (liblsl_LIBRARIES liblsl PARENT_SCOPE)
 include_directories (${Boost_INCLUDE_DIRS})
 
-set (liblsl_SOURCES
+set (sources
   api_config.cpp
   common.cpp
   consumer_queue.cpp
@@ -32,40 +29,16 @@ set (liblsl_SOURCES
   legacy/legacy_abi.cpp
 )
 
-set (liblsl_HEADERS
-  lsl_c.h
-  lsl_cpp.h
-  api_config.h
-  cancellable_streambuf.h
-  cancellation.h
-  common.h
-  consumer_queue.h
-  data_receiver.h
-  info_receiver.h
-  inlet_connection.h
-  resolve_attempt_udp.h
-  resolver_impl.h
-  sample.h
-  send_buffer.h
-  socket_utils.h
-  stream_info_impl.h
-  stream_inlet_impl.h
-  stream_outlet_impl.h
-  tcp_server.h
-  time_postprocessor.h
-  time_receiver.h
-  udp_server.h
-)
-
 message (${Boost_LIBRARIES})
+
 set(target lsl64)
 if (NOT (CMAKE_SIZEOF_VOID_P EQUAL 8))
   set(target lsl32)
 endif()
 
 if (BUILD_SHARED)
-  add_library (${target} SHARED ${liblsl_SOURCES} ${liblsl_HEADERS})
-  target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../external)
+  add_library (${target} SHARED ${sources})
+  target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../external)
   target_link_libraries (${target} ${Boost_LIBRARIES})
   set_target_properties(${target}
     PROPERTIES
@@ -107,5 +80,39 @@ if (BUILD_SHARED)
       endif ()
     endif ()
   endif()
+install_obs_core(${target})
 
 endif (BUILD_SHARED)
+
+if (BUILD_STATIC)
+  add_library (${target}-static STATIC ${sources})
+  target_include_directories(${target}-static PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../external)
+  
+  set_property (TARGET ${target}-static PROPERTY COMPILE_DEFINITIONS LIBLSL_STATIC)
+  if(WIN32)
+    set_target_properties(${target}-static
+            PROPERTIES
+                PREFIX lib
+                IMPORT_PREFIX lib
+    )
+  endif()
+
+  # TODO: Need to check if all flags are necessary or if some flags are missing
+  # TODO: Add support for other platforms
+  if (UNIX)
+    set_property (TARGET ${target}-static PROPERTY COMPILE_FLAGS "-fPIC")
+    set_target_properties (${target}-static PROPERTIES OUTPUT_NAME ${target})
+    target_link_libraries (${target}-static ${Boost_LIBRARIES} rt pthread)
+  endif ()
+
+  if (CMAKE_VERSION VERSION_GREATER 2.8.8)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5)
+        set_property (TARGET ${target}-static PROPERTY COMPILE_FLAGS " -std=c++0x" APPEND_STRING)
+      endif ()
+    endif ()
+  endif()
+
+endif (BUILD_STATIC)
+
+

@@ -980,7 +980,8 @@ static inline void apply_interleaved_packet_offset(struct obs_output *output,
 
 	out->dts -= offset;
 	out->pts -= offset;
-
+	uint64_t current_ts= os_gettime_ns();
+	uint64_t time_diff= out->dts_usec - current_ts;
 	/* convert the newly adjusted dts to relative dts time to ensure proper
 	 * interleaving.  if we're using an audio encoder that's already been
 	 * started on another output, then the first audio packet may not be
@@ -1069,9 +1070,9 @@ static inline void send_interleaved(struct obs_output *output)
 			sample[0] = (double) output->total_frames;
 			sample[1] = (double) os_gettime_ns();
 			sample[2] = (double) out.tick_time;
-			sample[3] = (double) *obs->media_frame_number;
+			sample[3] = (double) obs->media_frame_number;
 			double timediff = sample[1] - sample[2];
-			send_lsl_trigger(&obs->obs_lsl_global->outlet, sample);
+			send_lsl_trigger_output(&obs->obs_lsl_global->outlet1, sample);
 			//send_ppt_trigger(1, &obs->obs_lsl_global->outputs_mutex);
 		}
 	}

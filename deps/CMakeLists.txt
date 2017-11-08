@@ -5,7 +5,7 @@ endif()
 
 add_subdirectory(glad)
 add_subdirectory(ipc-util)
-#add_subdirectory(liblsl)
+add_subdirectory(liblsl)
 if(BUILD_LIBFF)
 	add_subdirectory(libff)
 endif()
